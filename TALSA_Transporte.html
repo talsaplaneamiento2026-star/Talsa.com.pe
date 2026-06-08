@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#5B21B6">
+<title>TALSA Grape Farms — Control de Transporte</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --P:#7C3AED;--PD:#5B21B6;--PDD:#3B0D8F;--PL:#EDE9FE;--PM:#A78BFA;
+  --G:#1D9E75;--GD:#0F6E56;--G50:#E1F5EE;
+  --A:#BA7517;--A50:#FAEEDA;
+  --R:#A32D2D;--R50:#FCEBEB;--R20:#F09595;
+  --N9:#111827;--N7:#374151;--N5:#6B7280;--N3:#D1D5DB;--N1:#F3F4F6;--N0:#F9FAFB;
+  --W:#fff;--font:'Inter',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:10px;--rl:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:var(--font);color:var(--N9);background:var(--N0);font-size:14px}
+
+/* ── UTILITIES ── */
+.hidden{display:none!important}
+.flex{display:flex}.fac{align-items:center}.fjb{justify-content:space-between}
+.gap8{gap:8px}.gap12{gap:12px}
+.w100{width:100%}
+.mono{font-family:var(--mono)}
+.bold{font-weight:600}
+.small{font-size:12px}
+.muted{color:var(--N5)}
+
+/* ── SCREEN MANAGER ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ══════════════════════════════════════
+   LOGIN
+══════════════════════════════════════ */
+#s-login{background:var(--PDD)}
+.login-hero{
+  position:relative;flex-shrink:0;
+  height:48vh;min-height:260px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  padding-bottom:44px;overflow:hidden;
+}
+.login-hero-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  background:linear-gradient(135deg,#1a0540 0%,#3B0D8F 50%,#5B21B6 100%);
+}
+.login-hero-svg{position:absolute;inset:0;width:100%;height:100%;opacity:.18}
+.login-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,var(--PDD) 100%);
+}
+.login-brand{position:relative;z-index:2;text-align:center}
+.login-logo{
+  width:72px;height:72px;background:var(--W);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;
+  box-shadow:0 0 0 8px rgba(255,255,255,0.12);
+}
+.login-logo span{font-size:17px;font-weight:700;color:var(--P)}
+.login-brand h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.login-brand p{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px}
+.login-card{
+  flex:1;background:var(--W);
+  border-radius:26px 26px 0 0;
+  padding:28px 24px 32px;
+  position:relative;z-index:3;
+  box-shadow:0 -8px 32px rgba(0,0,0,.15);
+  overflow-y:auto;
+}
+.login-card h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-card .sub{font-size:13px;color:var(--N5);margin-bottom:20px}
+.lf{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.lf label{font-size:11px;font-weight:600;color:var(--P);text-transform:uppercase;letter-spacing:.5px}
+.lf input{
+  padding:12px 14px;border:1.5px solid var(--N3);border-radius:var(--r);
+  font-size:15px;color:var(--N9);background:var(--N0);font-family:var(--font);
+  transition:border-color .15s,box-shadow .15s;
+}
+.lf input:focus{outline:none;border-color:var(--P);background:var(--W);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.login-err{
+  display:none;background:var(--R50);border:1px solid var(--R20);
+  border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--R);margin-bottom:14px;
+}
+.login-err.show{display:block}
+.btn-login{
+  width:100%;padding:14px;background:var(--P);color:#fff;border:none;
+  border-radius:var(--r);font-size:14px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;cursor:pointer;font-family:var(--font);
+  transition:background .15s,transform .1s;margin-bottom:16px;
+}
+.btn-login:hover{background:var(--PD)}
+.btn-login:active{transform:scale(.98)}
+.login-hint{
+  background:var(--PL);border-radius:var(--r);padding:10px 14px;
+  font-size:12px;color:var(--PD);margin-bottom:16px;line-height:1.7;
+}
+.login-hint code{background:rgba(92,33,182,.12);padding:1px 5px;border-radius:4px;font-size:11px}
+.login-azure{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:12px;color:var(--N5);padding-top:14px;
+  border-top:1px solid var(--N1);
+}
+.login-footer{
+  background:var(--PDD);text-align:center;
+  padding:8px;font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0;
+}
+
+/* ══════════════════════════════════════
+   POST-LOGIN — SELECCIÓN DE MÓDULO
+══════════════════════════════════════ */
+#s-home{background:var(--N0)}
+.home-header{
+  background:linear-gradient(135deg,var(--PD),var(--P));
+  padding:48px 20px 28px;color:#fff;
+}
+.home-header .user-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.home-avatar{
+  width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.home-greeting{font-size:20px;font-weight:700;margin-bottom:4px}
+.home-sub{font-size:13px;color:rgba(255,255,255,.75)}
+.home-body{padding:20px 16px;flex:1}
+.mod-card{
+  background:var(--W);border:1px solid var(--N1);border-radius:var(--rl);
+  padding:18px;margin-bottom:14px;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.mod-card:hover{border-color:var(--PM);box-shadow:0 4px 16px rgba(124,58,237,.12)}
+.mod-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mod-icon.purple{background:var(--PL)}
+.mod-icon.green{background:var(--G50)}
+.mod-icon svg{width:24px;height:24px}
+.mod-title{font-size:15px;font-weight:700;color:var(--N9);margin-bottom:4px}
+.mod-desc{font-size:12px;color:var(--N5);line-height:1.5}
+.mod-arrow{margin-left:auto;color:var(--N3);align-self:center;flex-shrink:0}
+.role-badge{
+  background:var(--PL);color:var(--PD);font-size:11px;font-weight:600;
+  padding:8px 14px;border-radius:var(--r);text-align:center;margin-bottom:16px;
+}
+
+/* ══════════════════════════════════════
+   APP SHELL (módulos internos)
+══════════════════════════════════════ */
+#s-app{flex-direction:column}
+.app-topbar{
+  background:var(--PD);padding:44px 16px 12px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.app-back{
+  background:rgba(255,255,255,.15);border:none;color:#fff;
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+}
+.app-back svg{width:18px;height:18px}
+.app-topbar-title{font-size:15px;font-weight:700;color:#fff;flex:1}
+.app-topbar-sub{font-size:11px;color:rgba(255,255,255,.65)}
+.notif-btn{
+  position:relative;background:rgba(255,255,255,.15);border:none;
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.notif-btn svg{width:18px;height:18px;color:#fff}
+.notif-dot{
+  position:absolute;top:6px;right:6px;width:8px;height:8px;
+  background:#EF4444;border-radius:50%;border:2px solid var(--PD);
+}
+.app-content{flex:1;overflow-y:auto;padding:16px}
+
+/* ── PAGES ── */
+.apage{display:none}
+.apage.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--W);border:1px solid var(--N1);border-radius:var(--rl);margin-bottom:14px}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--N1);display:flex;align-items:center;gap:8px}
+.card-head h3{font-size:14px;font-weight:600;flex:1}
+.card-body{padding:16px}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.metric{background:var(--P);border-radius:var(--rl);padding:16px;text-align:center}
+.metric-val{font-size:32px;font-weight:700;color:#fff;line-height:1}
+.metric-label{font-size:11px;color:rgba(255,255,255,.75);margin-top:4px}
+
+/* ── FORM ── */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--N5);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:11px 13px;border:1.5px solid var(--N3);
+  border-radius:var(--r);font-size:14px;color:var(--N9);
+  background:var(--W);font-family:var(--font);
+  transition:border-color .15s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--P);box-shadow:0 0 0 3px rgba(124,58,237,.1);
+}
+.form-group input[readonly]{background:var(--N0);color:var(--N7)}
+.form-group textarea{resize:vertical;min-height:80px}
+.found-card{
+  background:var(--PL);border:1.5px solid var(--PM);border-radius:var(--r);
+  padding:12px 14px;margin-top:8px;
+}
+.found-card .fc-row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+.found-card .fc-label{color:var(--PD);font-weight:600}
+.found-card .fc-val{color:var(--N9);font-weight:500}
+.not-found-card{
+  background:var(--R50);border:1.5px solid var(--R20);border-radius:var(--r);
+  padding:10px 14px;margin-top:8px;font-size:13px;color:var(--R);
+}
+
+/* ── TOGGLE BUTTONS ── */
+.toggle-group{display:flex;gap:0;border:1.5px solid var(--N3);border-radius:var(--r);overflow:hidden}
+.toggle-btn{
+  flex:1;padding:10px;text-align:center;font-size:14px;font-weight:500;
+  background:var(--W);color:var(--N5);border:none;cursor:pointer;font-family:var(--font);
+  transition:all .15s;
+}
+.toggle-btn.active{background:var(--P);color:#fff;font-weight:600}
+
+/* ── CAPACITY BAR ── */
+.cap-wrap{margin-bottom:16px}
+.cap-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.cap-num{font-size:22px;font-weight:700;color:var(--N9)}
+.cap-bg{height:10px;background:var(--N1);border-radius:5px;overflow:hidden}
+.cap-fill{height:100%;background:var(--P);border-radius:5px;transition:width .3s,background .3s}
+.cap-fill.warn{background:var(--A)}
+.cap-fill.full{background:var(--R)}
+
+/* ── DNI LIST ── */
+.scan-zone{background:var(--N0);border:1px solid var(--N1);border-radius:var(--rl);padding:14px;margin-bottom:12px}
+.scan-row{display:flex;gap:8px;margin-bottom:6px}
+.scan-row input{flex:1;font-family:var(--mono);font-size:15px;padding:10px 12px;border:1.5px solid var(--N3);border-radius:var(--r);background:var(--W);color:var(--N9)}
+.scan-row input:focus{outline:none;border-color:var(--P);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.dni-list{max-height:220px;overflow-y:auto;margin-bottom:10px}
+.dni-row{
+  display:flex;align-items:center;gap:8px;padding:9px 10px;
+  border-radius:var(--r);margin-bottom:4px;
+  background:var(--N0);border:1px solid var(--N1);font-size:13px;
+}
+.dni-num{font-size:11px;color:var(--N5);min-width:20px;text-align:right}
+.dni-val{flex:1;font-family:var(--mono);font-weight:600}
+.dni-hora{font-size:11px;color:var(--N5)}
+.dni-actions{display:flex;gap:4px}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;color:var(--N5);transition:color .15s,background .15s}
+.icon-btn:hover.edit{color:var(--P);background:var(--PL)}
+.icon-btn:hover.del{color:var(--R);background:var(--R50)}
+.icon-btn svg{width:15px;height:15px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.badge-purple{background:var(--PL);color:var(--PD)}
+.badge-green{background:var(--G50);color:#085041}
+.badge-amber{background:var(--A50);color:#633806}
+.badge-red{background:var(--R50);color:var(--R)}
+.badge-gray{background:var(--N1);color:var(--N5)}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px 20px;border-radius:var(--r);font-size:14px;font-weight:600;
+  cursor:pointer;border:1.5px solid transparent;transition:all .15s;
+  font-family:var(--font);letter-spacing:.2px;
+}
+.btn-primary{background:var(--P);color:#fff;width:100%;margin-bottom:10px}
+.btn-primary:hover{background:var(--PD)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:var(--W);color:var(--N7);border-color:var(--N3);width:100%;margin-bottom:10px}
+.btn-secondary:hover{background:var(--N0)}
+.btn-green{background:var(--G);color:#fff;width:100%;margin-bottom:10px}
+.btn-green:hover{background:var(--GD)}
+.btn-danger{background:var(--R50);color:var(--R);border-color:var(--R20);width:100%;margin-bottom:10px}
+.btn svg{width:16px;height:16px}
+
+/* ── ALERTS ── */
+.alert{display:none;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r);font-size:13px;margin-bottom:12px}
+.alert.show{display:flex}
+.alert-danger{background:var(--R50);color:var(--R);border:1px solid var(--R20)}
+.alert-success{background:var(--G50);color:#085041;border:1px solid #9FE1CB}
+.alert-amber{background:var(--A50);color:#633806;border:1px solid #E5B96A}
+.alert svg{width:16px;height:16px;flex-shrink:0}
+
+/* ── STEPPER ── */
+.stepper{display:flex;margin-bottom:16px;border:1px solid var(--N3);border-radius:var(--r);overflow:hidden}
+.step{flex:1;padding:9px 6px;text-align:center;font-size:11px;font-weight:600;background:var(--N1);color:var(--N5);border-right:1px solid var(--N3)}
+.step:last-child{border-right:none}
+.step span{display:block;font-size:10px;font-weight:400;opacity:.7;margin-bottom:1px}
+.step.done{background:var(--PL);color:var(--PD)}
+.step.curr{background:var(--P);color:#fff}
+
+/* ── RESUMEN CARD ── */
+.res-table{width:100%;border-collapse:collapse;font-size:14px}
+.res-table td{padding:9px 0;border-bottom:1px solid var(--N1)}
+.res-table tr:last-child td{border-bottom:none}
+.res-table .rlabel{color:var(--N5);font-size:12px;font-weight:500;width:40%}
+.res-table .rval{font-weight:600;color:var(--N9);text-align:right}
+.res-table .rval.big{font-size:20px;color:var(--P)}
+
+/* ── FLOTA LIST ── */
+.flota-item{
+  background:var(--W);border:1px solid var(--N1);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;
+}
+.flota-placa{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--N9)}
+.flota-info{font-size:12px;color:var(--N5);margin:2px 0 8px}
+.flota-bar-bg{height:8px;background:var(--N1);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.flota-bar-fill{height:100%;background:var(--P);border-radius:4px;transition:width .3s}
+.flota-bar-fill.warn{background:var(--A)}
+.flota-bar-fill.full{background:var(--G)}
+.flota-nums{display:flex;justify-content:space-between;font-size:12px;color:var(--N5)}
+
+/* ── SOLICITUD ITEM ── */
+.solic-item{
+  background:var(--N0);border:1px solid var(--N1);border-radius:var(--r);
+  padding:12px;margin-bottom:8px;
+}
+.solic-area{font-weight:600;font-size:14px;color:var(--N9)}
+.solic-detail{font-size:12px;color:var(--N5);margin-top:2px}
+
+/* ── GARITA ITEM ── */
+.garita-item{
+  background:var(--W);border:1.5px solid var(--N3);border-radius:var(--rl);
+  padding:16px;margin-bottom:12px;
+}
+.garita-item.verificado{border-color:var(--G)}
+.garita-item.observado{border-color:var(--A)}
+.garita-btn-row{display:flex;gap:8px;margin-top:12px}
+.garita-btn-row .btn{flex:1;margin-bottom:0;padding:10px}
+
+/* ── EDIT MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--W);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:14px}
+.modal-actions .btn{flex:1;margin-bottom:0}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--N9);color:#fff;padding:12px 20px;border-radius:30px;
+  font-size:13px;font-weight:500;z-index:300;transition:transform .3s;
+  white-space:nowrap;max-width:90vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--G)}
+.toast.error{background:var(--R)}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:8px;margin-bottom:14px}
+.filter-row select{flex:1;padding:9px 10px;border:1.5px solid var(--N3);border-radius:var(--r);font-size:13px;background:var(--W);font-family:var(--font)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 20px;color:var(--N5)}
+.empty svg{width:40px;height:40px;margin-bottom:10px;opacity:.25}
+.empty p{font-size:13px}
+
+/* ── LOGOUT BTN ── */
+.logout-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;font-family:var(--font);padding:4px 0;margin-top:4px}
+
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  .login-hero{height:55vh}
+  .login-card{max-width:420px;margin:0 auto;border-radius:var(--rl);padding:36px 40px}
+  #s-login{align-items:center;justify-content:center;padding:40px 20px;background:linear-gradient(135deg,var(--PDD),var(--PD))}
+  #s-login .login-hero{width:100%;max-width:900px;border-radius:var(--rl) var(--rl) 0 0}
+  #s-login .login-footer{max-width:900px;width:100%;border-radius:0 0 var(--rl) var(--rl)}
+  .app-content{max-width:480px;margin:0 auto;width:100%}
+  #s-home .home-body{max-width:480px;margin:0 auto;width:100%}
+  #s-home .home-header{padding-top:60px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════ -->
+<div id="s-login" class="screen active">
+  <div class="login-hero">
+    <div class="login-hero-bg"></div>
+    <svg class="login-hero-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <circle cx="80" cy="50" r="1.5" fill="white"/><circle cx="200" cy="25" r="1" fill="white"/><circle cx="350" cy="55" r="1.5" fill="white"/><circle cx="500" cy="30" r="1" fill="white"/><circle cx="650" cy="65" r="1.5" fill="white"/><circle cx="720" cy="20" r="1" fill="white"/><circle cx="420" cy="15" r="1.5" fill="white"/>
+      <path d="M0 280 Q150 200 300 250 Q450 170 600 220 Q700 190 800 210 L800 400 L0 400Z" fill="rgba(255,255,255,0.04)"/>
+      <path d="M0 320 Q120 270 240 300 Q360 250 480 285 Q600 255 720 275 L800 270 L800 400 L0 400Z" fill="rgba(255,255,255,0.06)"/>
+      <!-- Main bus -->
+      <rect x="220" y="285" width="320" height="100" rx="10" fill="#5B21B6"/>
+      <rect x="228" y="292" width="304" height="52" rx="5" fill="#7C3AED"/>
+      <rect x="236" y="297" width="42" height="36" rx="5" fill="#A78BFA" opacity=".9"/>
+      <rect x="286" y="297" width="42" height="36" rx="5" fill="#A78BFA" opacity=".9"/>
+      <rect x="336" y="297" width="42" height="36" rx="5" fill="#A78BFA" opacity=".9"/>
+      <rect x="386" y="297" width="42" height="36" rx="5" fill="#A78BFA" opacity=".9"/>
+      <rect x="436" y="297" width="42" height="36" rx="5" fill="#A78BFA" opacity=".9"/>
+      <rect x="236" y="297" width="42" height="12" rx="2" fill="rgba(255,255,255,.2)"/>
+      <rect x="286" y="297" width="42" height="12" rx="2" fill="rgba(255,255,255,.2)"/>
+      <rect x="336" y="297" width="42" height="12" rx="2" fill="rgba(255,255,255,.2)"/>
+      <rect x="386" y="297" width="42" height="12" rx="2" fill="rgba(255,255,255,.2)"/>
+      <rect x="436" y="297" width="42" height="12" rx="2" fill="rgba(255,255,255,.2)"/>
+      <rect x="238" y="340" width="44" height="44" rx="3" fill="#4C1D95"/>
+      <circle cx="278" cy="362" r="3" fill="#A78BFA"/>
+      <circle cx="295" cy="382" r="20" fill="#1a1a2e"/><circle cx="295" cy="382" r="11" fill="#2d2d4e"/><circle cx="295" cy="382" r="4" fill="#A78BFA"/>
+      <circle cx="495" cy="382" r="20" fill="#1a1a2e"/><circle cx="495" cy="382" r="11" fill="#2d2d4e"/><circle cx="495" cy="382" r="4" fill="#A78BFA"/>
+      <rect x="500" y="308" width="36" height="18" rx="4" fill="#FEF3C7" opacity=".9"/>
+      <path d="M536 308 L568 290 L568 332 L536 326Z" fill="rgba(254,243,199,.2)"/>
+      <rect x="320" y="368" width="66" height="18" rx="3" fill="white"/>
+      <text x="353" y="381" font-family="monospace" font-size="10" font-weight="bold" fill="#1a1a2e" text-anchor="middle">D7P-123</text>
+      <!-- Small bus left -->
+      <rect x="30" y="315" width="155" height="65" rx="6" fill="#4C1D95" opacity=".5"/>
+      <rect x="38" y="322" width="139" height="28" rx="3" fill="#5B21B6" opacity=".5"/>
+      <rect x="44" y="325" width="24" height="20" rx="3" fill="#7C3AED" opacity=".4"/>
+      <rect x="74" y="325" width="24" height="20" rx="3" fill="#7C3AED" opacity=".4"/>
+      <rect x="104" y="325" width="24" height="20" rx="3" fill="#7C3AED" opacity=".4"/>
+      <rect x="134" y="325" width="24" height="20" rx="3" fill="#7C3AED" opacity=".4"/>
+      <circle cx="68" cy="378" r="12" fill="#1a1a2e" opacity=".5"/>
+      <circle cx="155" cy="378" r="12" fill="#1a1a2e" opacity=".5"/>
+      <!-- Small bus right -->
+      <rect x="610" y="305" width="155" height="65" rx="6" fill="#3B0D8F" opacity=".5"/>
+      <rect x="618" y="312" width="139" height="28" rx="3" fill="#5B21B6" opacity=".4"/>
+      <rect x="624" y="315" width="22" height="18" rx="2" fill="#7C3AED" opacity=".3"/>
+      <rect x="652" y="315" width="22" height="18" rx="2" fill="#7C3AED" opacity=".3"/>
+      <rect x="680" y="315" width="22" height="18" rx="2" fill="#7C3AED" opacity=".3"/>
+      <rect x="708" y="315" width="22" height="18" rx="2" fill="#7C3AED" opacity=".3"/>
+      <circle cx="640" cy="368" r="11" fill="#1a1a2e" opacity=".5"/>
+      <circle cx="728" cy="368" r="11" fill="#1a1a2e" opacity=".5"/>
+      <!-- Road -->
+      <rect x="0" y="395" width="800" height="5" fill="rgba(255,255,255,0.05)"/>
+    </svg>
+    <div class="login-hero-overlay"></div>
+    <div class="login-brand">
+      <div class="login-logo"><span>TGF</span></div>
+      <h1>TALSA GRAPE FARMS</h1>
+      <p>App de Control de Transporte de Personal</p>
+    </div>
+  </div>
+  <div class="login-card">
+    <h2>Iniciar sesión</h2>
+    <p class="sub">Ingresa con tu cuenta corporativa</p>
+    <div class="login-hint">
+      <strong>Cuentas de prueba:</strong><br>
+      admin@talsa.com / <code>admin123</code> — Admin<br>
+      operador@talsa.com / <code>op123</code> — Operador RR.HH.<br>
+      encargado@talsa.com / <code>enc123</code> — Encargado transporte<br>
+      garita@talsa.com / <code>gar123</code> — Vigilante garita<br>
+      supervisor@talsa.com / <code>sup123</code> — Supervisor
+    </div>
+    <div class="lf">
+      <label>Usuario (correo corporativo)</label>
+      <input type="email" id="l-user" placeholder="usuario@talsagrapefarms.com" autocomplete="username">
+    </div>
+    <div class="lf">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="login-err">Correo o contraseña incorrectos.</div>
+    <button class="btn-login" onclick="doLogin()">Ingresar</button>
+    <div class="login-azure">
+      <svg width="16" height="16" viewBox="0 0 23 23" fill="none"><path d="M1 1h10v10H1z" fill="#F25022"/><path d="M12 1h10v10H12z" fill="#7FBA00"/><path d="M1 12h10v10H1z" fill="#00A4EF"/><path d="M12 12h10v10H12z" fill="#FFB900"/></svg>
+      Autenticación vía Microsoft Azure AD
+    </div>
+  </div>
+  <div class="login-footer">v1.0 — Coordinación de Planificación e Información · TALSA Grape Farms</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     HOME — SELECCIÓN DE MÓDULO
+══════════════════════════════════════ -->
+<div id="s-home" class="screen">
+  <div class="home-header">
+    <div class="user-row">
+      <div class="home-avatar" id="h-av">OP</div>
+      <div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7)">Buenos días,</div>
+        <div style="font-size:18px;font-weight:700;color:#fff" id="h-name">Usuario</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.65)" id="h-cargo">Cargo</div>
+      </div>
+      <button class="logout-btn" style="margin-left:auto" onclick="doLogout()">Salir</button>
+    </div>
+    <div class="home-greeting">¿Qué módulo necesitas hoy?</div>
+  </div>
+  <div class="home-body">
+    <div class="role-badge" id="h-role-badge">Acceso según tu rol</div>
+    <div id="mod-buses" class="mod-card hidden" onclick="abrirBuses()">
+      <div class="mod-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--P)" stroke-width="2"><path d="M8 6h8M3 10h18v8H3zM3 10V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/><circle cx="7" cy="20" r="2"/><circle cx="17" cy="20" r="2"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="mod-title">Registro de Buses</div>
+        <div class="mod-desc" id="mod-buses-desc">Escaneo DNI · Control embarque<br>QR garita · Supervisión flota</div>
+      </div>
+      <div class="mod-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div id="mod-taxis" class="mod-card hidden" onclick="abrirTaxis()">
+      <div class="mod-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--G)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 4v2M12 12v4"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="mod-title">Taxis y Minivans</div>
+        <div class="mod-desc" id="mod-taxis-desc">Solicitud retorno · Padrón del día<br>Asignación · Validación garita</div>
+      </div>
+      <div class="mod-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div style="background:var(--PL);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--PD);margin-top:8px">
+      🔒 Acceso según tu rol — Solo ves los módulos habilitados para tu perfil.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP — MÓDULO BUSES
+══════════════════════════════════════ -->
+<div id="s-app" class="screen">
+  <div class="app-topbar">
+    <button class="app-back" onclick="volverHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div style="flex:1">
+      <div class="app-topbar-title" id="ap-title">Registro de Buses</div>
+      <div class="app-topbar-sub">TALSA GRAPE FARMS</div>
+    </div>
+    <button class="notif-btn hidden" id="notif-btn" onclick="verNotificaciones()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-dot" id="notif-dot"></div>
+    </button>
+  </div>
+  <div class="app-content">
+
+    <!-- ── BUSES: PASO 1 — REGISTRO UNIDAD ── -->
+    <div class="apage active" id="ap-b1">
+      <div class="stepper">
+        <div class="step curr" id="bs1"><span>Paso 1</span>Unidad</div>
+        <div class="step" id="bs2"><span>Paso 2</span>Personal</div>
+        <div class="step" id="bs3"><span>Paso 3</span>Resumen</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Registro de Unidad</h3></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Placa de la unidad</label>
+            <input type="text" id="b-placa" placeholder="Ej: D7P-123" oninput="buscarUnidad()" style="text-transform:uppercase;font-family:var(--mono);font-size:16px;font-weight:600">
+          </div>
+          <div id="b-found" class="hidden">
+            <div class="found-card">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;color:var(--PD);font-size:12px;font-weight:600">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Unidad encontrada
+              </div>
+              <div class="fc-row"><span class="fc-label">Proveedor</span><span class="fc-val" id="b-prov">—</span></div>
+              <div class="fc-row"><span class="fc-label">Modelo</span><span class="fc-val" id="b-modelo">—</span></div>
+              <div class="fc-row"><span class="fc-label">Capacidad máx.</span><span class="fc-val" id="b-cap">—</span></div>
+            </div>
+          </div>
+          <div id="b-notfound" class="not-found-card hidden">Placa no encontrada en el catálogo.</div>
+          <div class="form-group" style="margin-top:14px">
+            <label>Paradero de inicio</label>
+            <select id="b-paradero">
+              <option value="">Seleccionar...</option>
+              <option>Expansión</option><option>Guadalupe</option>
+              <option>Cerro Fierro</option><option>Cerro Prieto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fundo destino</label>
+            <select id="b-fundo">
+              <option value="">Seleccionar...</option>
+              <option>Procom</option><option>Agritac</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="bIrPaso2()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            INICIAR REGISTRO
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUSES: PASO 2 — ESCANEO ── -->
+    <div class="apage hidden" id="ap-b2">
+      <div class="stepper">
+        <div class="step done" id="bs1b"><span>Paso 1</span>Unidad</div>
+        <div class="step curr" id="bs2b"><span>Paso 2</span>Personal</div>
+        <div class="step" id="bs3b"><span>Paso 3</span>Resumen</div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Escaneo de Personal</h3>
+          <span class="badge badge-purple" id="b-cap-badge">0/0</span>
+        </div>
+        <div class="card-body">
+          <div class="cap-wrap">
+            <div class="cap-top">
+              <span>Capacidad ocupada</span>
+              <span><span class="cap-num" id="b-cap-n">0</span> / <span id="b-cap-max">0</span></span>
+            </div>
+            <div class="cap-bg"><div class="cap-fill" id="b-cap-fill" style="width:0%"></div></div>
+          </div>
+          <div class="alert alert-danger" id="b-alert-cap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            Capacidad máxima alcanzada.
+          </div>
+          <div class="scan-zone">
+            <div style="font-size:12px;color:var(--N5);font-weight:600;margin-bottom:8px">Escanea o ingresa el DNI (8 dígitos)</div>
+            <div class="scan-row">
+              <input type="text" id="b-dni" placeholder="12345678" maxlength="8" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')bAgregarDNI(false)">
+              <button class="btn btn-primary" style="width:auto;margin:0;padding:10px 14px" onclick="bAgregarDNI(false)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3M15 21h3"/></svg>
+              </button>
+              <button class="btn btn-secondary" style="width:auto;margin:0;padding:10px 12px" onclick="bAgregarDNI(true)" title="Manual">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h4"/></svg>
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--N5);margin-top:4px">Prueba: <span class="link" style="color:var(--P);cursor:pointer" onclick="document.getElementById('b-dni').value='12345678'">12345678</span></div>
+          </div>
+          <div class="dni-list" id="b-dni-list"></div>
+          <div class="form-group" style="margin-top:8px">
+            <label>Observaciones (opcional)</label>
+            <input type="text" id="b-obs" placeholder="Ej: 2 bajas en parada Guadalupe">
+          </div>
+          <button class="btn btn-secondary" onclick="bIrPaso1()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Volver
+          </button>
+          <button class="btn btn-primary" onclick="bIrPaso3()">Finalizar registro</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUSES: PASO 3 — RESUMEN ── -->
+    <div class="apage hidden" id="ap-b3">
+      <div class="card">
+        <div class="card-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--P)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <h3>Resumen de Viaje</h3>
+          <span style="font-size:11px;color:var(--N5)">TGF · QR generado</span>
+        </div>
+        <div class="card-body">
+          <table class="res-table" id="b-res-table"></table>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="bNueva()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        NUEVA UNIDAD
+      </button>
+    </div>
+
+    <!-- ── BUSES: GARITA ── -->
+    <div class="apage hidden" id="ap-garita">
+      <div class="alert alert-amber show" style="margin-bottom:14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+        Tienes viajes pendientes de verificar.
+      </div>
+      <div id="garita-list"></div>
+      <div class="empty hidden" id="garita-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <p>Todos los viajes han sido verificados.</p>
+      </div>
+    </div>
+
+    <!-- ── BUSES: SUPERVISIÓN ── -->
+    <div class="apage hidden" id="ap-super">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val" id="su-unidades">0</div>
+          <div class="metric-label">unidades activas</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="su-personas">0</div>
+          <div class="metric-label">personas</div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="su-filtro" onchange="renderSuper()">
+          <option value="">Todos los fundos</option>
+          <option>Procom</option><option>Agritac</option>
+        </select>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--N5);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Flota activa hoy</div>
+      <div id="super-list"></div>
+      <button class="btn btn-secondary" onclick="exportExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Exportar Excel
+      </button>
+      <button class="btn btn-primary" onclick="suEnviar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        ENVIAR
+      </button>
+    </div>
+
+    <!-- ── TAXIS: SOLICITAR ── -->
+    <div class="apage hidden" id="ap-t1">
+      <div class="card">
+        <div class="card-head"><h3>Solicitar movilidad</h3><span class="badge badge-gray" style="font-size:10px">Retorno</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Área solicitante</label>
+            <select id="t-area">
+              <option value="">Seleccionar área...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ruta</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" id="t-norte" onclick="setRuta('Norte')">◦ Norte</button>
+              <button class="toggle-btn active" id="t-sur" onclick="setRuta('Sur')">• Sur</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Destino</label>
+            <select id="t-destino">
+              <option value="">Seleccionar destino...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cantidad de personas</label>
+            <input type="number" id="t-personas" placeholder="4" min="1" max="50" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label>Hora estimada de salida</label>
+            <input type="time" id="t-hora" value="17:30">
+          </div>
+          <div class="form-group">
+            <label>Observaciones (opcional)</label>
+            <textarea id="t-obs" placeholder="Notas adicionales..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="tEnviarSolicitud()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            ENVIAR SOLICITUD
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAXIS: PADRÓN ── -->
+    <div class="apage hidden" id="ap-t2">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val" id="t-total-pers">0</div>
+          <div class="metric-label">personas</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="t-total-rutas">2</div>
+          <div class="metric-label">rutas activas</div>
+        </div>
+      </div>
+      <div id="padron-norte" style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--P);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px" id="padron-norte-title">RUTA NORTE · 0 personas</div>
+        <div id="padron-norte-list"></div>
+      </div>
+      <div id="padron-sur">
+        <div style="font-size:12px;font-weight:700;color:var(--G);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px" id="padron-sur-title">RUTA SUR · 0 personas</div>
+        <div id="padron-sur-list"></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-head"><h3>Sugerencia del sistema</h3></div>
+        <div class="card-body">
+          <div id="sugerencia-norte" style="margin-bottom:8px;font-size:14px"></div>
+          <div id="sugerencia-sur" style="font-size:14px"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1;margin-bottom:0" onclick="tAsignar('Norte')">Asignar Norte</button>
+        <button class="btn btn-secondary" style="flex:1;margin-bottom:0;border-color:var(--G);color:var(--G)" onclick="tAsignar('Sur')">Asignar Sur</button>
+      </div>
+    </div>
+
+    <!-- ── TAXIS: ASIGNAR ── -->
+    <div class="apage hidden" id="ap-t3">
+      <div class="card">
+        <div class="card-head"><h3 id="t3-title">Asignar vehículo</h3><span class="badge badge-purple" id="t3-badge">Norte</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Sugerencia</label>
+            <div style="background:var(--PL);border-radius:var(--r);padding:10px 14px;font-size:14px;font-weight:600;color:var(--PD)" id="t3-sug">Minivan (5-15 pers.)</div>
+          </div>
+          <div class="form-group">
+            <label>Tipo de vehículo</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" id="t3-taxi" onclick="setTipo('Taxi')">◦ Taxi</button>
+              <button class="toggle-btn active" id="t3-minivan" onclick="setTipo('Minivan')">• Minivan</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Proveedor</label>
+            <select id="t3-prov">
+              <option value="">Seleccionar proveedor...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Placa</label>
+            <input type="text" id="t3-placa" placeholder="Ej: D7P-123" style="text-transform:uppercase;font-family:var(--mono)" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label>Destino principal</label>
+            <select id="t3-destino">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hora de salida</label>
+            <input type="time" id="t3-salida" value="17:30">
+          </div>
+          <div class="form-group">
+            <label>Hora de ingreso</label>
+            <input type="time" id="t3-ingreso">
+          </div>
+          <div class="alert alert-amber show">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Al confirmar se enviará notificación automática al vigilante de garita.
+          </div>
+          <button class="btn btn-primary" onclick="tConfirmar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            CONFIRMAR Y NOTIFICAR GARITA
+          </button>
+          <button class="btn btn-secondary" onclick="showAPage('ap-t2')">Volver</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAXIS: GARITA ── -->
+    <div class="apage hidden" id="ap-tg">
+      <div id="tg-list"></div>
+      <div class="empty hidden" id="tg-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <p>Sin asignaciones pendientes.</p>
+      </div>
+    </div>
+
+  </div><!-- /app-content -->
+</div><!-- /s-app -->
+
+<!-- ── MODAL EDITAR DNI ── -->
+<div class="modal-bg" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Editar DNI</div>
+    <div class="form-group">
+      <label>Nuevo DNI (8 dígitos)</label>
+      <input type="text" id="edit-dni-val" maxlength="8" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" style="font-family:var(--mono);font-size:18px;font-weight:600;text-align:center">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEditDNI()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG — EDITA AQUÍ
+// ═══════════════════════════════════════════════
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwFBZnGDf8WVbXFNIj9YIviKMw52MxBZn6A5YM2aEXa63uSNFkoNQ4ChENQT95Co-394Q/exec";
+
+const USUARIOS = [
+  {email:"admin@talsa.com",     pass:"admin123", nombre:"Administrador",      cargo:"Admin Sistema",             rol:"admin"},
+  {email:"operador@talsa.com",  pass:"op123",    nombre:"Luis Quispe",         cargo:"Operador RR.HH.",           rol:"operador"},
+  {email:"encargado@talsa.com", pass:"enc123",   nombre:"Carlos Huanca",       cargo:"Encargado de Transporte",   rol:"encargado"},
+  {email:"garita@talsa.com",    pass:"gar123",   nombre:"Pedro Torres",        cargo:"Vigilante de Garita",       rol:"garita"},
+  {email:"supervisor@talsa.com",pass:"sup123",   nombre:"Jose Luis Huayancah", cargo:"Coordinación - Planificación TGF", rol:"supervisor"},
+];
+
+const BUSES = [
+  {placa:"D7P-123", proveedor:"Empresa Santa Teresa", modelo:"Bus Mercedes Benz", cap:25},
+  {placa:"A3B-456", proveedor:"Grupo Sur",            modelo:"Minibús Hyundai",   cap:20},
+  {placa:"K9L-789", proveedor:"Transportes Alpha",    modelo:"Bus Toyota",        cap:18},
+];
+
+const AREAS = ["Planeamiento","TI","Almacen","Sanidad","SCT","RR.HH.","Logística","Finanzas"];
+
+const DESTINOS = {
+  Norte: ["Expansión","Guadalupe","Cerro Fierro"],
+  Sur:   ["Cuarta Familia","Cerro Prieto","Procom"],
+};
+
+const PROVEEDORES_TAXI = ["Villantenor","Empresa Los Andes","Transportes Sur","Grupo Norte"];
+
+const CAP_TAXI    = 4;   // editable por admin
+const CAP_MINIVAN = 15;  // editable por admin
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentUser = null;
+let viajeActual = {};
+let dniActuales = [];
+let unidadActual = null;
+let editDNIIdx = null;
+let viajes = [];
+let viajeId = 1;
+let solicitudesTaxis = [];
+let asignacionesTaxis = [];
+let rutaAsignando = "";
+let tipoVehiculo = "Minivan";
+let rutaSolicitud = "Sur";
+let notifPendientes = [];
+
+// ═══════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showAPage(id) {
+  document.querySelectorAll('.apage').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.apage').forEach(p => p.classList.add('hidden'));
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('l-user').value.trim().toLowerCase();
+  const pass  = document.getElementById('l-pass').value;
+  const user  = USUARIOS.find(u => u.email === email && u.pass === pass);
+  document.getElementById('login-err').classList.remove('show');
+  if (!user) { document.getElementById('login-err').classList.add('show'); return; }
+  currentUser = user;
+  mostrarHome();
+}
+function doLogout() {
+  currentUser = null;
+  document.getElementById('l-pass').value = '';
+  showScreen('s-login');
+}
+
+function mostrarHome() {
+  const u = currentUser;
+  document.getElementById('h-av').textContent = u.nombre.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('h-name').textContent = u.nombre;
+  document.getElementById('h-cargo').textContent = u.cargo;
+  document.getElementById('h-role-badge').textContent = '🔒 Acceso según tu rol · ' + u.cargo;
+
+  const modBuses = document.getElementById('mod-buses');
+  const modTaxis = document.getElementById('mod-taxis');
+  modBuses.classList.add('hidden');
+  modTaxis.classList.add('hidden');
+
+  const r = u.rol;
+  if (r === 'operador') {
+    modBuses.classList.remove('hidden');
+    document.getElementById('mod-buses-desc').textContent = 'Escaneo DNI · Control embarque';
+  }
+  if (r === 'encargado') {
+    modBuses.classList.remove('hidden');
+    modTaxis.classList.remove('hidden');
+  }
+  if (r === 'garita') {
+    modBuses.classList.remove('hidden');
+    modTaxis.classList.remove('hidden');
+    document.getElementById('mod-buses-desc').textContent = 'Validación ingreso de buses';
+    document.getElementById('mod-taxis-desc').textContent = 'Validación salida de taxis';
+  }
+  if (r === 'supervisor' || r === 'admin') {
+    modBuses.classList.remove('hidden');
+    modTaxis.classList.remove('hidden');
+  }
+  showScreen('s-home');
+}
+
+// ═══════════════════════════════════════════════
+// ABRIR MÓDULOS
+// ═══════════════════════════════════════════════
+function abrirBuses() {
+  document.getElementById('ap-title').textContent = 'Registro de Buses';
+  const r = currentUser.rol;
+  if (r === 'garita') {
+    renderGarita();
+    showAPage('ap-garita');
+    document.getElementById('notif-btn').classList.remove('hidden');
+  } else if (r === 'supervisor' || r === 'admin') {
+    renderSuper();
+    showAPage('ap-super');
+  } else {
+    showAPage('ap-b1');
+    llenarSelectPlacas();
+  }
+  showScreen('s-app');
+}
+
+function abrirTaxis() {
+  document.getElementById('ap-title').textContent = 'Taxis y Minivans';
+  const r = currentUser.rol;
+  if (r === 'garita') {
+    renderGaritaTaxis();
+    showAPage('ap-tg');
+    document.getElementById('notif-btn').classList.remove('hidden');
+    updateNotifDot();
+  } else if (r === 'supervisor' || r === 'admin' || r === 'encargado') {
+    renderPadron();
+    showAPage('ap-t2');
+  } else {
+    // operador de area → solicitud
+    llenarAreasTaxis();
+    showAPage('ap-t1');
+  }
+  showScreen('s-app');
+}
+
+function volverHome() {
+  document.getElementById('notif-btn').classList.add('hidden');
+  mostrarHome();
+  showScreen('s-home');
+}
+
+// ═══════════════════════════════════════════════
+// BUSES — PASO 1
+// ═══════════════════════════════════════════════
+function llenarSelectPlacas() {
+  // placas se ingresan manualmente, solo mostramos el campo
+}
+function buscarUnidad() {
+  const val = document.getElementById('b-placa').value.trim().toUpperCase();
+  const found = document.getElementById('b-found');
+  const notfound = document.getElementById('b-notfound');
+  found.classList.add('hidden');
+  notfound.classList.add('hidden');
+  unidadActual = null;
+  if (val.length < 4) return;
+  const u = BUSES.find(b => b.placa === val);
+  if (u) {
+    unidadActual = u;
+    document.getElementById('b-prov').textContent = u.proveedor;
+    document.getElementById('b-modelo').textContent = u.modelo;
+    document.getElementById('b-cap').textContent = u.cap + ' personas';
+    found.classList.remove('hidden');
+  } else if (val.length >= 7) {
+    notfound.classList.remove('hidden');
+  }
+}
+function bIrPaso2() {
+  if (!unidadActual) { showToast('Ingresa una placa válida.','error'); return; }
+  if (!document.getElementById('b-paradero').value) { showToast('Selecciona el paradero de inicio.','error'); return; }
+  if (!document.getElementById('b-fundo').value) { showToast('Selecciona el fundo destino.','error'); return; }
+  dniActuales = [];
+  document.getElementById('b-cap-max').textContent = unidadActual.cap;
+  document.getElementById('b-cap-badge').textContent = '0/' + unidadActual.cap;
+  bUpdateCap();
+  bRenderDNI();
+  showAPage('ap-b2');
+}
+
+// ═══════════════════════════════════════════════
+// BUSES — PASO 2
+// ═══════════════════════════════════════════════
+function bIrPaso1() { showAPage('ap-b1'); }
+function bAgregarDNI(manual) {
+  const cap = unidadActual ? unidadActual.cap : 25;
+  if (dniActuales.length >= cap) { showToast('Capacidad máxima alcanzada.','error'); return; }
+  const val = document.getElementById('b-dni').value.trim();
+  if (val.length < 8) { showToast('DNI debe tener 8 dígitos.','error'); return; }
+  if (dniActuales.find(d => d.dni === val)) { showToast('DNI ya registrado.','error'); return; }
+  const now = new Date();
+  dniActuales.push({dni:val, hora:now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0'), manual});
+  document.getElementById('b-dni').value = '';
+  bUpdateCap();
+  bRenderDNI();
+}
+function bUpdateCap() {
+  const cap = unidadActual ? unidadActual.cap : 25;
+  const n = dniActuales.length;
+  const pct = Math.round(n/cap*100);
+  const fill = document.getElementById('b-cap-fill');
+  fill.style.width = Math.min(pct,100)+'%';
+  fill.className = 'cap-fill' + (pct>=100?' full':pct>=80?' warn':'');
+  document.getElementById('b-cap-n').textContent = n;
+  document.getElementById('b-cap-badge').textContent = n+'/'+cap;
+  document.getElementById('b-alert-cap').classList.toggle('show', n>=cap);
+}
+function bRenderDNI() {
+  const el = document.getElementById('b-dni-list');
+  if (!dniActuales.length) { el.innerHTML = '<div style="text-align:center;padding:14px;font-size:13px;color:var(--N5)">Sin personal registrado</div>'; return; }
+  el.innerHTML = dniActuales.map((d,i) => `
+    <div class="dni-row">
+      <span class="dni-num">${i+1}</span>
+      <span class="dni-val">${d.dni}</span>
+      <span class="dni-hora">${d.hora}</span>
+      <span class="badge ${d.manual?'badge-amber':'badge-purple'}" style="font-size:10px">${d.manual?'Manual':'Escáner'}</span>
+      <div class="dni-actions">
+        <button class="icon-btn edit" onclick="abrirEditDNI(${i})" title="Editar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn del" onclick="bEliminarDNI(${i})" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
+}
+function bEliminarDNI(i) { dniActuales.splice(i,1); bUpdateCap(); bRenderDNI(); }
+function abrirEditDNI(i) { editDNIIdx=i; document.getElementById('edit-dni-val').value=dniActuales[i].dni; document.getElementById('modal-edit').classList.add('open'); }
+function cerrarModal() { document.getElementById('modal-edit').classList.remove('open'); editDNIIdx=null; }
+function guardarEditDNI() {
+  const val = document.getElementById('edit-dni-val').value.trim();
+  if (val.length < 8) { showToast('DNI debe tener 8 dígitos.','error'); return; }
+  if (dniActuales.find((d,i) => d.dni===val && i!==editDNIIdx)) { showToast('DNI ya registrado.','error'); return; }
+  dniActuales[editDNIIdx].dni = val;
+  cerrarModal(); bRenderDNI();
+}
+function bIrPaso3() {
+  if (!dniActuales.length) { showToast('Registra al menos una persona.','error'); return; }
+  const now = new Date();
+  viajeActual = {
+    id: viajeId++,
+    fecha: now.toLocaleDateString('es-PE'),
+    hora: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0'),
+    placa: unidadActual.placa,
+    proveedor: unidadActual.proveedor,
+    ruta: document.getElementById('b-paradero').value + ' → ' + document.getElementById('b-fundo').value,
+    paradero: document.getElementById('b-paradero').value,
+    fundo: document.getElementById('b-fundo').value,
+    total: dniActuales.length,
+    capMax: unidadActual.cap,
+    dnis: dniActuales.map(d=>d.dni).join(', '),
+    obs: document.getElementById('b-obs').value,
+    operador: currentUser.nombre,
+    estado: 'Pendiente verificación',
+  };
+  viajes.push({...viajeActual});
+  document.getElementById('b-res-table').innerHTML = `
+    <tr><td class="rlabel">Unidad</td><td class="rval mono">${viajeActual.placa}</td></tr>
+    <tr><td class="rlabel">Proveedor</td><td class="rval">${viajeActual.proveedor.replace('Empresa ','')}</td></tr>
+    <tr><td class="rlabel">Ruta</td><td class="rval">${viajeActual.ruta}</td></tr>
+    <tr><td class="rlabel">Fecha</td><td class="rval">${viajeActual.fecha} ${viajeActual.hora}</td></tr>
+    <tr><td class="rlabel">Personal</td><td class="rval big">${viajeActual.total} personas</td></tr>
+  `;
+  showAPage('ap-b3');
+}
+function bNueva() {
+  document.getElementById('b-placa').value='';
+  document.getElementById('b-paradero').value='';
+  document.getElementById('b-fundo').value='';
+  document.getElementById('b-obs').value='';
+  document.getElementById('b-found').classList.add('hidden');
+  document.getElementById('b-notfound').classList.add('hidden');
+  dniActuales=[]; unidadActual=null;
+  showAPage('ap-b1');
+}
+
+// ═══════════════════════════════════════════════
+// GARITA BUSES
+// ═══════════════════════════════════════════════
+function renderGarita() {
+  const list = document.getElementById('garita-list');
+  const empty = document.getElementById('garita-empty');
+  const pendientes = viajes.filter(v => v.estado === 'Pendiente verificación');
+  if (!pendientes.length) { list.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  list.innerHTML = pendientes.map(v => `
+    <div class="garita-item" id="gi-${v.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700">${v.placa}</div>
+          <div style="font-size:12px;color:var(--N5);margin-top:2px">${v.proveedor}</div>
+        </div>
+        <span class="badge badge-amber">Pendiente</span>
+      </div>
+      <div style="font-size:13px;margin-top:8px;color:var(--N7)">
+        <div>📍 ${v.ruta}</div>
+        <div>👥 <strong>${v.total}</strong> personas · 🕐 ${v.hora}</div>
+      </div>
+      <div class="garita-btn-row">
+        <button class="btn btn-green" style="margin:0" onclick="garitaVerificar(${v.id})">✅ Verificado</button>
+        <button class="btn btn-danger" style="margin:0" onclick="garitaObservado(${v.id})">⚠️ Observado</button>
+      </div>
+      <div class="hidden" id="obs-box-${v.id}" style="margin-top:10px">
+        <div class="form-group" style="margin-bottom:8px">
+          <label>Descripción de la observación</label>
+          <textarea id="obs-text-${v.id}" placeholder="Describe la incidencia..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="margin:0" onclick="garitaEnviarObs(${v.id})">ENVIAR</button>
+      </div>
+    </div>`).join('');
+}
+function garitaVerificar(id) {
+  const v = viajes.find(x=>x.id===id);
+  if (!v) return;
+  v.estado='Verificado';
+  v.vigilante = currentUser.nombre;
+  enviarSheets('Verificacion_Garita_Buses', {
+    ID_Viaje:id, Fecha:v.fecha, Hora:v.hora, Placa:v.placa,
+    Ruta:v.ruta, Total_Personas:v.total,
+    Estado:'Verificado', Observacion:'', Vigilante:currentUser.nombre
+  });
+  showToast('✅ Viaje verificado','success');
+  renderGarita();
+}
+function garitaObservado(id) { document.getElementById('obs-box-'+id).classList.remove('hidden'); }
+function garitaEnviarObs(id) {
+  const obs = document.getElementById('obs-text-'+id).value.trim();
+  if (!obs) { showToast('Escribe la observación.','error'); return; }
+  const v = viajes.find(x=>x.id===id);
+  if (!v) return;
+  v.estado='Observado'; v.observacion=obs; v.vigilante=currentUser.nombre;
+  enviarSheets('Verificacion_Garita_Buses',{
+    ID_Viaje:id, Fecha:v.fecha, Hora:v.hora, Placa:v.placa,
+    Ruta:v.ruta, Total_Personas:v.total,
+    Estado:'Observado', Observacion:obs, Vigilante:currentUser.nombre
+  });
+  showToast('⚠️ Observación enviada','success');
+  renderGarita();
+}
+
+// ═══════════════════════════════════════════════
+// SUPERVISIÓN BUSES
+// ═══════════════════════════════════════════════
+function renderSuper() {
+  const filtro = document.getElementById('su-filtro').value;
+  const filtered = viajes.filter(v => !filtro || v.fundo===filtro);
+  document.getElementById('su-unidades').textContent = filtered.length;
+  document.getElementById('su-personas').textContent = filtered.reduce((a,v)=>a+v.total,0);
+  const list = document.getElementById('super-list');
+  if (!filtered.length) { list.innerHTML='<div class="empty"><p>Sin registros.</p></div>'; return; }
+  list.innerHTML = filtered.map(v => {
+    const pct = Math.round(v.total/v.capMax*100);
+    const fillClass = pct>=100?'full':pct>=80?'warn':'';
+    return `<div class="flota-item">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="flota-placa">${v.placa}</div>
+        <span style="font-weight:700;color:${pct>=100?'var(--G)':'var(--P)'};font-size:15px">${v.total}/${v.capMax}</span>
+      </div>
+      <div class="flota-info">${v.proveedor.replace('Empresa ','')} · ${v.ruta}</div>
+      <div class="flota-bar-bg"><div class="flota-bar-fill ${fillClass}" style="width:${Math.min(pct,100)}%"></div></div>
+      <div class="flota-nums"><span>${pct}%</span>${pct>=100?'<span style="color:var(--G);font-weight:600">✓ Lleno</span>':''}</div>
+    </div>`;
+  }).join('');
+}
+function suEnviar() {
+  if (!viajes.length) { showToast('Sin datos para enviar.','error'); return; }
+  viajes.forEach(v => {
+    enviarSheets('Viajes_Buses',{
+      ID:v.id, Fecha:v.fecha, Hora:v.hora, Placa:v.placa,
+      Proveedor:v.proveedor, Ruta:v.ruta, Paradero:v.paradero,
+      Fundo:v.fundo, Total_Personas:v.total, Cap_Max:v.capMax,
+      DNIs:v.dnis, Observaciones:v.obs||'', Operador:v.operador, Estado:v.estado
+    });
+  });
+  showToast('📤 Datos enviados a Google Sheets','success');
+}
+function exportExcel() {
+  if (!viajes.length) { showToast('Sin datos para exportar.','error'); return; }
+  const data = viajes.map(v=>({'ID':v.id,'Fecha':v.fecha,'Hora':v.hora,'Placa':v.placa,'Proveedor':v.proveedor,'Ruta':v.ruta,'Paradero':v.paradero,'Fundo':v.fundo,'Total Personas':v.total,'Cap. Máx.':v.capMax,'DNIs':v.dnis,'Observaciones':v.obs||'','Operador':v.operador,'Estado':v.estado}));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [6,12,8,10,22,20,14,10,10,8,40,20,16,14].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Viajes_Buses',ws);
+  XLSX.writeFile(wb,'TALSA_Buses_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+// ═══════════════════════════════════════════════
+// TAXIS — SOLICITAR
+// ═══════════════════════════════════════════════
+function llenarAreasTaxis() {
+  const sel = document.getElementById('t-area');
+  sel.innerHTML = '<option value="">Seleccionar área...</option>' + AREAS.map(a=>`<option>${a}</option>`).join('');
+  setRuta('Sur');
+}
+function setRuta(r) {
+  rutaSolicitud = r;
+  document.getElementById('t-norte').className = 'toggle-btn' + (r==='Norte'?' active':'');
+  document.getElementById('t-sur').className   = 'toggle-btn' + (r==='Sur'?' active':'');
+  const sel = document.getElementById('t-destino');
+  sel.innerHTML = '<option value="">Seleccionar destino...</option>' + DESTINOS[r].map(d=>`<option>${d}</option>`).join('');
+}
+function tEnviarSolicitud() {
+  const area = document.getElementById('t-area').value;
+  const destino = document.getElementById('t-destino').value;
+  const personas = document.getElementById('t-personas').value;
+  const hora = document.getElementById('t-hora').value;
+  if (!area||!destino||!personas) { showToast('Completa todos los campos.','error'); return; }
+  const sol = {area, ruta:rutaSolicitud, destino, personas:parseInt(personas), hora, obs:document.getElementById('t-obs').value, solicitante:currentUser.nombre, fecha:new Date().toLocaleDateString('es-PE')};
+  solicitudesTaxis.push(sol);
+  enviarSheets('Solicitudes_Taxis',{
+    Fecha:sol.fecha, Area:sol.area, Ruta:sol.ruta, Destino:sol.destino,
+    Personas:sol.personas, Hora:sol.hora, Observaciones:sol.obs||'', Solicitante:sol.solicitante
+  });
+  showToast('✅ Solicitud enviada','success');
+  document.getElementById('t-area').value='';
+  document.getElementById('t-personas').value='';
+  document.getElementById('t-obs').value='';
+}
+
+// ═══════════════════════════════════════════════
+// TAXIS — PADRÓN
+// ═══════════════════════════════════════════════
+function renderPadron() {
+  const norte = solicitudesTaxis.filter(s=>s.ruta==='Norte');
+  const sur   = solicitudesTaxis.filter(s=>s.ruta==='Sur');
+  const totalNorte = norte.reduce((a,s)=>a+s.personas,0);
+  const totalSur   = sur.reduce((a,s)=>a+s.personas,0);
+  const total = totalNorte + totalSur;
+  document.getElementById('t-total-pers').textContent = total;
+  document.getElementById('padron-norte-title').textContent = `RUTA NORTE · ${totalNorte} personas`;
+  document.getElementById('padron-sur-title').textContent   = `RUTA SUR · ${totalSur} personas`;
+  const renderLista = (list, elId) => {
+    const el = document.getElementById(elId);
+    if (!list.length) { el.innerHTML='<div style="font-size:13px;color:var(--N5);padding:8px 0">Sin solicitudes</div>'; return; }
+    el.innerHTML = list.map(s=>`
+      <div class="solic-item">
+        <div class="solic-area">${s.area}</div>
+        <div class="solic-detail">${s.personas}p → ${s.destino}</div>
+      </div>`).join('');
+  };
+  renderLista(norte,'padron-norte-list');
+  renderLista(sur,'padron-sur-list');
+  // Sugerencias
+  const sugNorte = calcSugerencia(totalNorte);
+  const sugSur   = calcSugerencia(totalSur);
+  document.getElementById('sugerencia-norte').innerHTML = totalNorte ? `<span style="font-weight:600;color:var(--P)">Norte</span> &nbsp; ${sugNorte.tipo} &nbsp; <span style="color:var(--N5)">${totalNorte} pers.</span>` : '<span style="color:var(--N5)">Sin solicitudes Norte</span>';
+  document.getElementById('sugerencia-sur').innerHTML   = totalSur   ? `<span style="font-weight:600;color:var(--G)">Sur</span> &nbsp;&nbsp;&nbsp; ${sugSur.tipo} &nbsp; <span style="color:var(--N5)">${totalSur} pers.</span>` : '<span style="color:var(--N5)">Sin solicitudes Sur</span>';
+}
+function calcSugerencia(personas) {
+  if (personas <= CAP_TAXI) return {tipo:'Taxi', cap:CAP_TAXI};
+  return {tipo:'Minivan', cap:CAP_MINIVAN};
+}
+function tAsignar(ruta) {
+  rutaAsignando = ruta;
+  const solic = solicitudesTaxis.filter(s=>s.ruta===ruta);
+  const total = solic.reduce((a,s)=>a+s.personas,0);
+  const sug = calcSugerencia(total);
+  tipoVehiculo = sug.tipo;
+  document.getElementById('t3-title').textContent = `Asignar vehículo — Ruta ${ruta}`;
+  document.getElementById('t3-badge').textContent = `${ruta} · ${total} personas`;
+  document.getElementById('t3-sug').textContent = `${sug.tipo} (${sug.tipo==='Taxi'?'1-'+CAP_TAXI:'5-'+CAP_MINIVAN} pers.)`;
+  setTipo(sug.tipo);
+  // llenar proveedor
+  const psel = document.getElementById('t3-prov');
+  psel.innerHTML = '<option value="">Seleccionar...</option>' + PROVEEDORES_TAXI.map(p=>`<option>${p}</option>`).join('');
+  // llenar destino
+  const dsel = document.getElementById('t3-destino');
+  dsel.innerHTML = '<option value="">Seleccionar...</option>' + DESTINOS[ruta].map(d=>`<option>${d}</option>`).join('');
+  showAPage('ap-t3');
+}
+function setTipo(t) {
+  tipoVehiculo = t;
+  document.getElementById('t3-taxi').className    = 'toggle-btn'+(t==='Taxi'?' active':'');
+  document.getElementById('t3-minivan').className = 'toggle-btn'+(t==='Minivan'?' active':'');
+}
+function tConfirmar() {
+  const prov    = document.getElementById('t3-prov').value;
+  const placa   = document.getElementById('t3-placa').value.trim().toUpperCase();
+  const destino = document.getElementById('t3-destino').value;
+  const salida  = document.getElementById('t3-salida').value;
+  const ingreso = document.getElementById('t3-ingreso').value;
+  if (!prov||!placa||!destino||!salida) { showToast('Completa todos los campos.','error'); return; }
+  const asig = {
+    ruta:rutaAsignando, tipo:tipoVehiculo, proveedor:prov, placa, destino,
+    horaSalida:salida, horaIngreso:ingreso,
+    fecha:new Date().toLocaleDateString('es-PE'),
+    supervisor:currentUser.nombre, estado:'Pendiente garita',
+    id: Date.now()
+  };
+  asignacionesTaxis.push(asig);
+  notifPendientes.push(asig);
+  updateNotifDot();
+  enviarSheets('Asignacion_Taxis',{
+    Fecha:asig.fecha, Ruta:asig.ruta, Tipo:asig.tipo, Proveedor:asig.proveedor,
+    Placa:asig.placa, Destino:asig.destino, Hora_Salida:asig.horaSalida,
+    Hora_Ingreso:asig.horaIngreso, Supervisor:asig.supervisor, Estado:asig.estado
+  });
+  showToast('✅ Asignación confirmada. Garita notificada.','success');
+  showAPage('ap-t2');
+}
+
+// ═══════════════════════════════════════════════
+// GARITA TAXIS
+// ═══════════════════════════════════════════════
+function updateNotifDot() {
+  const dot = document.getElementById('notif-dot');
+  const btn = document.getElementById('notif-btn');
+  const pendientes = asignacionesTaxis.filter(a=>a.estado==='Pendiente garita');
+  if (pendientes.length) { dot.style.display='block'; btn.classList.remove('hidden'); }
+  else { dot.style.display='none'; }
+}
+function verNotificaciones() { renderGaritaTaxis(); showAPage('ap-tg'); }
+function renderGaritaTaxis() {
+  const list = document.getElementById('tg-list');
+  const empty = document.getElementById('tg-empty');
+  const pendientes = asignacionesTaxis.filter(a=>a.estado==='Pendiente garita');
+  if (!pendientes.length) { list.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  list.innerHTML = pendientes.map(a => `
+    <div class="garita-item" id="tgi-${a.id}">
+      <div style="display:flex;justify-content:space-between">
+        <div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700">${a.placa}</div>
+          <div style="font-size:12px;color:var(--N5)">${a.proveedor} · ${a.tipo}</div>
+        </div>
+        <span class="badge badge-amber">Pendiente</span>
+      </div>
+      <div style="font-size:13px;margin-top:8px;color:var(--N7)">
+        <div>📍 Ruta ${a.ruta} → ${a.destino}</div>
+        <div>🕐 Salida: ${a.horaSalida}${a.horaIngreso?' · Ingreso: '+a.horaIngreso:''}</div>
+      </div>
+      <div class="garita-btn-row">
+        <button class="btn btn-green" style="margin:0" onclick="tgAutorizar(${a.id})">✅ Autorizar salida</button>
+        <button class="btn btn-danger" style="margin:0" onclick="tgIncidencia(${a.id})">⚠️ Incidencia</button>
+      </div>
+      <div class="hidden" id="tg-obs-${a.id}" style="margin-top:10px">
+        <div class="form-group" style="margin-bottom:8px">
+          <label>Reportar incidencia</label>
+          <textarea id="tg-obs-text-${a.id}" placeholder="Describe la incidencia..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="margin:0" onclick="tgEnviarIncidencia(${a.id})">ENVIAR</button>
+      </div>
+    </div>`).join('');
+}
+function tgAutorizar(id) {
+  const a = asignacionesTaxis.find(x=>x.id===id);
+  if (!a) return;
+  a.estado='Autorizado';
+  enviarSheets('Verificacion_Garita_Taxis',{
+    Fecha:a.fecha, Ruta:a.ruta, Placa:a.placa, Tipo:a.tipo,
+    Destino:a.destino, Hora_Salida:a.horaSalida,
+    Estado:'Autorizado', Incidencia:'', Vigilante:currentUser.nombre
+  });
+  notifPendientes = notifPendientes.filter(x=>x.id!==id);
+  updateNotifDot();
+  showToast('✅ Salida autorizada','success');
+  renderGaritaTaxis();
+}
+function tgIncidencia(id) { document.getElementById('tg-obs-'+id).classList.remove('hidden'); }
+function tgEnviarIncidencia(id) {
+  const obs = document.getElementById('tg-obs-text-'+id).value.trim();
+  if (!obs) { showToast('Escribe la incidencia.','error'); return; }
+  const a = asignacionesTaxis.find(x=>x.id===id);
+  if (!a) return;
+  a.estado='Incidencia reportada';
+  enviarSheets('Verificacion_Garita_Taxis',{
+    Fecha:a.fecha, Ruta:a.ruta, Placa:a.placa, Tipo:a.tipo,
+    Destino:a.destino, Hora_Salida:a.horaSalida,
+    Estado:'Incidencia', Incidencia:obs, Vigilante:currentUser.nombre
+  });
+  notifPendientes = notifPendientes.filter(x=>x.id!==id);
+  updateNotifDot();
+  showToast('⚠️ Incidencia reportada','success');
+  renderGaritaTaxis();
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE SHEETS
+// ═══════════════════════════════════════════════
+function enviarSheets(hoja, fila) {
+  fetch(SHEETS_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({hoja, fila})
+  }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
