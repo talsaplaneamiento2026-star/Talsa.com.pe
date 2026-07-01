@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de Control — Talsa</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --surface-0:#F1EFE8;--surface-1:#F8F7F4;--surface-2:#FFFFFF;
+  --text-primary:#1a1a18;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:rgba(0,0,0,0.10);--border-strong:rgba(0,0,0,0.18);
+  --bg-accent:#E6F1FB;--text-accent:#185FA5;--fill-accent:#378ADD;--on-accent:#fff;
+  --text-success:#3B6D11;--radius:8px;--font-sans:system-ui,-apple-system,sans-serif;
+}
+body{font-family:var(--font-sans);background:var(--surface-0);color:var(--text-primary);min-height:100vh;padding:0}
+.container{max-width:1200px;margin:0 auto;padding:1.5rem 1.25rem}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+.header{display:flex;align-items:center;justify-content:space-between;padding:1rem 0 0.75rem;border-bottom:0.5px solid var(--border);margin-bottom:1.25rem}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:10px;background:#0F6E56;display:flex;align-items:center;justify-content:center}
+.logo i{color:#fff;font-size:20px}
+.app-title{font-size:17px;font-weight:500;color:var(--text-primary)}
+.app-sub{font-size:12px;color:var(--text-muted)}
+.week-chip{background:var(--bg-accent);color:var(--text-accent);font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px}
+
+.nav{display:flex;gap:8px;margin-bottom:1.5rem}
+.nav-btn{padding:8px 18px;border-radius:var(--radius);border:0.5px solid var(--border);background:transparent;cursor:pointer;font-size:13px;color:var(--text-secondary);font-family:var(--font-sans);display:flex;align-items:center;gap:7px;transition:all .15s}
+.nav-btn:hover{background:var(--surface-1)}
+.nav-btn.active{background:var(--surface-2);border-color:var(--border-strong);color:var(--text-primary);font-weight:500}
+.nav-btn i{font-size:16px}
+
+.view{display:none}
+.view.active{display:block}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap}
+.toolbar input,.toolbar select{font-size:13px;padding:7px 11px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-primary);font-family:var(--font-sans)}
+.toolbar input{flex:1;min-width:160px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--fill-accent)}
+.btn-primary{padding:7px 15px;border-radius:var(--radius);border:0.5px solid var(--border-accent,#185FA5);background:var(--bg-accent);color:var(--text-accent);cursor:pointer;font-size:13px;font-family:var(--font-sans);display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
+.btn-primary:hover{background:var(--fill-accent);color:#fff}
+
+/* Kanban */
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:800px){.kanban{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.kanban{grid-template-columns:1fr}}
+.col-wrap{display:flex;flex-direction:column;gap:8px}
+.col-head{padding:8px 12px;border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between}
+.col-head-todo{background:#E6F1FB}.col-head-prog{background:#FAEEDA}
+.col-head-rev{background:#FBEAF0}.col-head-done{background:#EAF3DE}
+.col-title{font-size:12px;font-weight:500}
+.col-title-todo{color:#0C447C}.col-title-prog{color:#633806}
+.col-title-rev{color:#72243E}.col-title-done{color:#27500A}
+.col-count{font-size:11px;padding:1px 8px;border-radius:20px;font-weight:500}
+.col-count-todo{background:#B5D4F4;color:#0C447C}.col-count-prog{background:#FAC775;color:#633806}
+.col-count-rev{background:#F4C0D1;color:#72243E}.col-count-done{background:#C0DD97;color:#27500A}
+.col-body{display:flex;flex-direction:column;gap:7px;min-height:100px}
+.task-card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 13px;transition:border-color .15s}
+.task-card:hover{border-color:var(--border-strong)}
+.task-name{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.task-detail{font-size:11px;color:var(--text-secondary);margin-bottom:7px}
+.task-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.resp-chip{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface-0);border:0.5px solid var(--border);color:var(--text-secondary)}
+.task-actions{display:flex;gap:3px;align-items:center}
+.move-select{font-size:11px;padding:2px 6px;border-radius:5px;border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.icon-btn{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:5px;color:var(--text-muted);font-size:14px;line-height:1;transition:all .15s}
+.icon-btn:hover{background:var(--surface-0);color:var(--text-primary)}
+.task-obs{font-size:11px;color:var(--text-muted);margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border);font-style:italic}
+.col-empty{text-align:center;color:var(--text-muted);font-size:12px;padding:1.5rem 0.5rem;border:0.5px dashed var(--border);border-radius:var(--radius)}
+
+/* Seguimiento */
+.seg-area{margin-bottom:1.75rem;background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
+.area-header{display:flex;align-items:center;gap:12px;padding:11px 16px}
+.area-header-rrhh{background:#EEEDFE;border-left:4px solid #534AB7}
+.area-header-ryc{background:#E1F5EE;border-left:4px solid #0F6E56}
+.area-title{font-size:13px;font-weight:500}
+.area-title-rrhh{color:#3C3489}.area-title-ryc{color:#085041}
+.area-prog{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500;white-space:nowrap}
+.area-prog-rrhh{background:#CECBF6;color:#3C3489}.area-prog-ryc{background:#9FE1CB;color:#085041}
+.prog-bar-wrap{height:4px;background:rgba(0,0,0,0.08);border-radius:2px;flex:1;overflow:hidden}
+.prog-bar-rrhh{height:4px;border-radius:2px;background:#534AB7;transition:width .4s}
+.prog-bar-ryc{height:4px;border-radius:2px;background:#0F6E56;transition:width .4s}
+.ind-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.ind-table th{background:var(--surface-1);padding:8px 12px;text-align:left;font-weight:500;font-size:11px;color:var(--text-muted);border-bottom:0.5px solid var(--border)}
+.ind-table td{padding:9px 12px;border-bottom:0.5px solid var(--border);color:var(--text-primary);vertical-align:middle}
+.ind-table tbody tr:last-child td{border-bottom:none}
+.ind-table tbody tr:hover td{background:var(--surface-1)}
+.tipo-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px}
+.tipo-manual{background:#E6F1FB;color:#185FA5}.tipo-prog{background:#EAF3DE;color:#3B6D11}
+.chk-manual{width:16px;height:16px;cursor:pointer;accent-color:#0F6E56}
+.op-icon{color:var(--text-success);font-size:17px}
+.horario{font-size:11px;color:var(--text-muted)}
+.frec-chip{background:var(--surface-1);border:0.5px solid var(--border);color:var(--text-secondary);font-size:11px;padding:1px 8px;border-radius:20px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface-2);border:0.5px solid var(--border);border-radius:14px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+.modal-title{font-size:15px;font-weight:500;color:var(--text-primary);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.form-row{margin-bottom:11px}
+.form-row label{display:block;font-size:11px;color:var(--text-secondary);margin-bottom:3px;font-weight:500}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:8px 11px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-primary);font-family:var(--font-sans);font-size:13px}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--fill-accent)}
+.form-row textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.btn-cancel{padding:7px 16px;border-radius:var(--radius);border:0.5px solid var(--border);background:transparent;cursor:pointer;font-size:13px;color:var(--text-secondary);font-family:var(--font-sans)}
+.btn-cancel:hover{background:var(--surface-1)}
+.btn-save{padding:7px 16px;border-radius:var(--radius);border:none;background:#0F6E56;color:#fff;cursor:pointer;font-size:13px;font-family:var(--font-sans);font-weight:500}
+.btn-save:hover{background:#085041}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="sr-only">Tablero de control Talsa — Coordinación de Planificación e Información</h1>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><i class="ti ti-layout-dashboard" aria-hidden="true"></i></div>
+      <div>
+        <div class="app-title">Tablero de control</div>
+        <div class="app-sub">Coordinación de Planificación e Información</div>
+      </div>
+    </div>
+    <span class="week-chip" id="week-chip">Semana —</span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showView('kanban',this)"><i class="ti ti-layout-kanban" aria-hidden="true"></i> Tareas</button>
+    <button class="nav-btn" onclick="showView('seg',this)"><i class="ti ti-chart-dots" aria-hidden="true"></i> Seguimiento de indicadores</button>
+  </div>
+
+  <!-- KANBAN -->
+  <div id="view-kanban" class="view active">
+    <div class="toolbar">
+      <input type="text" id="k-search" placeholder="Buscar tarea..." oninput="renderKanban()">
+      <select id="k-resp" onchange="renderKanban()">
+        <option value="">Todos los responsables</option>
+        <option>jhon</option>
+        <option>rocio</option>
+      </select>
+      <button class="btn-primary" onclick="openModal()"><i class="ti ti-plus" aria-hidden="true"></i> Nueva tarea</button>
+    </div>
+    <div class="kanban" id="kanban-board"></div>
+  </div>
+
+  <!-- SEGUIMIENTO -->
+  <div id="view-seg" class="view">
+    <div class="toolbar">
+      <input type="text" id="s-search" placeholder="Buscar indicador..." oninput="renderSeg()">
+    </div>
+    <div id="seg-content"></div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-plus" aria-hidden="true"></i> Nueva tarea</div>
+      <div class="form-row"><label>Tarea</label><input type="text" id="f-name" placeholder="Nombre de la tarea"></div>
+      <div class="form-row"><label>Responsable</label>
+        <select id="f-resp"><option>jhon</option><option>rocio</option></select>
+      </div>
+      <div class="form-row"><label>Estado inicial</label>
+        <select id="f-estado">
+          <option value="todo">Por hacer</option>
+          <option value="prog">En progreso</option>
+          <option value="rev">En revisión</option>
+          <option value="done">Hecho</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Detalle / progreso</label><input type="text" id="f-detail" placeholder="Ej: api sanidad - nicolas"></div>
+      <div class="form-row"><label>Observación</label><textarea id="f-obs" placeholder="Notas adicionales..."></textarea></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-save" onclick="saveTask()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TK='talsa_v3_tasks';
+const SK='talsa_v3_seg';
+
+const COLS=[
+  {id:'todo',label:'Por hacer',head:'col-head-todo',title:'col-title-todo',count:'col-count-todo'},
+  {id:'prog',label:'En progreso',head:'col-head-prog',title:'col-title-prog',count:'col-count-prog'},
+  {id:'rev',label:'En revisión',head:'col-head-rev',title:'col-title-rev',count:'col-count-rev'},
+  {id:'done',label:'Hecho',head:'col-head-done',title:'col-title-done',count:'col-count-done'},
+];
+
+const defaultTasks=[
+  {id:1,name:'excel estación',resp:'rocio',estado:'prog',detail:'',obs:''},
+  {id:2,name:'ppt rendimiento',resp:'jhon',estado:'done',detail:'',obs:''},
+  {id:3,name:'api sanidad',resp:'jhon',estado:'prog',detail:'api sanidad - nicolas',obs:''},
+  {id:4,name:'ipe casa',resp:'jhon',estado:'prog',detail:'ipe casa - nicolas',obs:''},
+  {id:5,name:'indicador comercial',resp:'jhon',estado:'todo',detail:'',obs:''},
+  {id:6,name:'apps de buses y taxis',resp:'jhon',estado:'prog',detail:'',obs:''},
+  {id:7,name:'gant de comercial',resp:'jhon',estado:'done',detail:'',obs:''},
+  {id:8,name:'Observ. rotación y retención',resp:'rocio',estado:'done',detail:'',obs:'retirar toltik de categorización'},
+  {id:9,name:'Cobertura de personal',resp:'rocio',estado:'done',detail:'',obs:''},
+  {id:10,name:'Observ. rendimientos',resp:'rocio',estado:'done',detail:'',obs:''},
+  {id:11,name:'Conexión Registro Aplicaciones El Negro',resp:'rocio',estado:'done',detail:'',obs:''},
+  {id:12,name:'Proyección de cajas 8.2 kg',resp:'rocio',estado:'prog',detail:'',obs:''},
+  {id:13,name:'Indicador de Raleo',resp:'rocio',estado:'prog',detail:'',obs:''},
+];
+
+const defaultSeg=[
+  {id:1,area:'rrhh',indicador:'Retención y Rotación de Personal',tipo:'Manual',primera:'06:00',ultima:'13:30',frec:2,operativo:true,realizado:false},
+  {id:2,area:'rrhh',indicador:'Cobertura de Personal',tipo:'Manual',primera:'06:00',ultima:'13:30',frec:2,operativo:true,realizado:false},
+  {id:3,area:'ryc',indicador:'Rendimiento por lote',tipo:'Manual',primera:'',ultima:'',frec:'',operativo:false,realizado:false},
+  {id:4,area:'ryc',indicador:'Costo de producción agrícola',tipo:'Manual',primera:'',ultima:'',frec:'',operativo:false,realizado:false},
+  {id:5,area:'ryc',indicador:'Costo de mano de obra',tipo:'Manual',primera:'',ultima:'',frec:'',operativo:false,realizado:false},
+  {id:6,area:'ryc',indicador:'Eficiencia de labores',tipo:'Programada',primera:'06:00',ultima:'17:00',frec:7,operativo:true,realizado:false},
+];
+
+let tasks=[], segData=[];
+
+function loadData(){
+  try{ const r=localStorage.getItem(TK); tasks=r?JSON.parse(r):defaultTasks; }catch(e){ tasks=defaultTasks; }
+  try{ const r=localStorage.getItem(SK); segData=r?JSON.parse(r):defaultSeg; }catch(e){ segData=defaultSeg; }
+  document.getElementById('week-chip').textContent='Semana '+getWeek();
+  renderKanban(); renderSeg();
+}
+
+function saveTasks(){ try{ localStorage.setItem(TK,JSON.stringify(tasks)); }catch(e){} }
+function saveSeg(){ try{ localStorage.setItem(SK,JSON.stringify(segData)); }catch(e){} }
+
+function getWeek(){
+  const d=new Date(),j=new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-j)/86400000)+j.getDay()+1)/7);
+}
+
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function renderKanban(){
+  const q=document.getElementById('k-search').value.toLowerCase();
+  const fr=document.getElementById('k-resp').value;
+  const board=document.getElementById('kanban-board');
+  const filtered=tasks.filter(t=>(!q||(t.name+t.detail+t.obs).toLowerCase().includes(q))&&(!fr||t.resp===fr));
+  board.innerHTML=COLS.map(col=>{
+    const items=filtered.filter(t=>t.estado===col.id);
+    return `<div class="col-wrap">
+      <div class="col-head ${col.head}">
+        <span class="col-title ${col.title}">${col.label}</span>
+        <span class="col-count ${col.count}">${items.length}</span>
+      </div>
+      <div class="col-body">
+        ${items.length?items.map(t=>`
+          <div class="task-card">
+            <div class="task-name">${t.name}</div>
+            ${t.detail?`<div class="task-detail">${t.detail}</div>`:''}
+            <div class="task-footer">
+              <span class="resp-chip">${t.resp}</span>
+              <div class="task-actions">
+                <select class="move-select" onchange="moveTask(${t.id},this.value)" title="Mover a...">
+                  ${COLS.map(c=>`<option value="${c.id}"${c.id===t.estado?' selected':''}>${c.label}</option>`).join('')}
+                </select>
+                <button class="icon-btn" onclick="deleteTask(${t.id})" aria-label="Eliminar"><i class="ti ti-trash" aria-hidden="true"></i></button>
+              </div>
+            </div>
+            ${t.obs?`<div class="task-obs">${t.obs}</div>`:''}
+          </div>`).join(''):`<div class="col-empty">Sin tareas</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function moveTask(id,newEstado){
+  const t=tasks.find(x=>x.id===id);
+  if(t){ t.estado=newEstado; saveTasks(); renderKanban(); }
+}
+function deleteTask(id){
+  if(!confirm('¿Eliminar esta tarea?')) return;
+  tasks=tasks.filter(x=>x.id!==id);
+  saveTasks(); renderKanban();
+}
+
+function renderSeg(){
+  const q=document.getElementById('s-search').value.toLowerCase();
+  const areas=[
+    {id:'rrhh',label:'Gestión Humana',hc:'area-header-rrhh',tc:'area-title-rrhh',pc:'area-prog-rrhh',bar:'prog-bar-rrhh'},
+    {id:'ryc',label:'Rendimientos y Costos',hc:'area-header-ryc',tc:'area-title-ryc',pc:'area-prog-ryc',bar:'prog-bar-ryc'},
+  ];
+  let html='';
+  areas.forEach(area=>{
+    const items=segData.filter(s=>s.area===area.id&&(!q||s.indicador.toLowerCase().includes(q)));
+    const done=items.filter(s=>s.realizado).length;
+    const pct=items.length?Math.round(done/items.length*100):0;
+    html+=`<div class="seg-area">
+      <div class="area-header ${area.hc}">
+        <span class="area-title ${area.tc}">${area.label}</span>
+        <span class="area-prog ${area.pc}">${done}/${items.length} realizados</span>
+        <div class="prog-bar-wrap" style="flex:1;margin-left:10px"><div class="${area.bar}" style="width:${pct}%"></div></div>
+      </div>
+      <table class="ind-table">
+        <thead><tr>
+          <th style="width:32%">Indicador</th>
+          <th style="width:14%">Tipo</th>
+          <th style="width:12%">1ra act.</th>
+          <th style="width:12%">Última act.</th>
+          <th style="width:10%">Frec.</th>
+          <th style="width:10%">Operativo</th>
+          <th style="width:10%">Realizado</th>
+        </tr></thead>
+        <tbody>${items.map(s=>`<tr>
+          <td style="font-weight:500">${s.indicador}</td>
+          <td><span class="tipo-badge ${s.tipo==='Manual'?'tipo-manual':'tipo-prog'}">
+            <i class="ti ${s.tipo==='Manual'?'ti-hand-click':'ti-clock'}" style="font-size:11px" aria-hidden="true"></i>${s.tipo||'—'}
+          </span></td>
+          <td class="horario">${s.primera||'—'}</td>
+          <td class="horario">${s.ultima||'—'}</td>
+          <td>${s.frec?`<span class="frec-chip">${s.frec}d</span>`:'—'}</td>
+          <td style="text-align:center">${s.operativo?`<i class="ti ti-square-check op-icon" aria-hidden="true"></i>`:'—'}</td>
+          <td style="text-align:center">${s.tipo==='Manual'
+            ?`<input type="checkbox" class="chk-manual" ${s.realizado?'checked':''} onchange="toggleRealizado(${s.id},this.checked)">`
+            :'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  });
+  document.getElementById('seg-content').innerHTML=html;
+}
+
+function toggleRealizado(id,val){
+  const s=segData.find(x=>x.id===id);
+  if(s){ s.realizado=val; saveSeg(); renderSeg(); }
+}
+
+function openModal(){ document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+
+document.getElementById('modal-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+function saveTask(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){ document.getElementById('f-name').focus(); return; }
+  const newId=tasks.length?Math.max(...tasks.map(t=>t.id))+1:1;
+  tasks.push({
+    id:newId,
+    name,
+    resp:document.getElementById('f-resp').value,
+    estado:document.getElementById('f-estado').value,
+    detail:document.getElementById('f-detail').value.trim(),
+    obs:document.getElementById('f-obs').value.trim(),
+  });
+  saveTasks(); renderKanban(); closeModal();
+  ['f-name','f-detail','f-obs'].forEach(id=>document.getElementById(id).value='');
+}
+
+loadData();
+</script>
+</body>
+</html>
