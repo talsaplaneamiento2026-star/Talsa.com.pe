@@ -54,6 +54,8 @@
   .top-pill{border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:#374151;background:#fff;}
   .icon-circle{width:32px;height:32px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:14px;}
   .avatar{width:32px;height:32px;border-radius:50%;background:#d9dde1;color:#555;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+  .btn-salir{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);color:#374151;font-size:13px;font-weight:600;padding:7px 14px;border-radius:7px;}
+  .btn-salir:hover{background:#fdecea;border-color:#f3b6b0;color:var(--danger);}
 
   .layout{display:flex;flex:1;min-height:0;}
   .sidebar{width:230px;background:#fff;border-right:1px solid var(--border);flex:0 0 auto;padding:14px 0;}
@@ -67,6 +69,7 @@
   .side-sub.link{color:var(--teal-dark);cursor:pointer;font-weight:500;}
   .side-sub.link:hover{text-decoration:underline;}
   .side-sub.active{color:var(--teal-dark);font-weight:700;}
+  #monitoreoSubmenu{overflow:hidden;transition:max-height .2s ease;}
 
   .main{flex:1;overflow-y:auto;min-width:0;}
   .breadcrumb{padding:12px 20px 0;font-size:13px;color:var(--muted);}
@@ -74,7 +77,7 @@
 
   /* home */
   .home-content{display:flex;align-items:center;gap:60px;padding:60px 40px;}
-  .home-illustration{flex:0 0 380px;}
+  .home-illustration{flex:0 0 420px;}
   .home-text{max-width:520px;font-size:15px;line-height:1.7;color:#374151;}
   .home-text .highlight{color:#2e8b57;font-weight:600;}
 
@@ -84,14 +87,14 @@
   .btn-buscar{background:var(--teal);color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;}
   .btn-buscar:hover{background:var(--teal-dark);}
   .filters-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:12px;}
+  .filters-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end;}
   .field label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
   .field label .req{color:var(--danger);margin-right:2px;}
+  .field label .opt{font-weight:400;color:#6b7280;}
   .field select, .field input{width:100%;height:34px;border:1px solid #cfd6db;border-radius:6px;padding:0 10px;font-size:13px;background:#fff;color:var(--text);}
-  .field input[readonly]{background:#eef2f2;color:#374151;}
-  .filters-grid2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:center;}
 
   .map-wrapper{margin:14px 20px 20px;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative;}
-  #mapReal{height:480px;width:100%;background:#243b2a;}
+  #mapReal{height:480px;width:100%;background:#12324a;}
   .back-btn{position:absolute;top:12px;left:56px;z-index:500;background:#fff;border:1px solid #d6d6d6;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;color:#374151;display:none;align-items:center;gap:6px;box-shadow:0 1px 4px rgba(0,0,0,.2);}
   .cluster-badge{width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;border:2px solid #fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(58,157,93,.28);cursor:pointer;}
   .pin-icon svg{width:30px;height:30px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
@@ -116,7 +119,8 @@
   .accordion .body .f.check{display:flex;align-items:center;gap:8px;padding-top:20px;}
 
   @media (max-width:900px){
-    .filters-grid,.filters-grid2{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .filters-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .filters-grid3{grid-template-columns:repeat(2,minmax(0,1fr));}
     .accordion .body{grid-template-columns:repeat(2,minmax(0,1fr));}
     .home-content{flex-direction:column;padding:30px 20px;}
   }
@@ -154,24 +158,27 @@
       <span class="icon-circle">&#128276;</span>
       <span class="icon-circle">ES</span>
       <span class="avatar">M</span>
+      <button class="btn-salir" onclick="logout()">&#10148; Salir</button>
     </div>
   </div>
   <div class="layout">
     <div class="sidebar">
       <div class="side-logo">yawi</div>
       <div class="side-item active" id="nav-inicio" onclick="goHome()">Inicio</div>
-      <div class="side-item" onclick="this.classList.toggle('open')">Configuración <span class="chev">&#9660;</span></div>
-      <div class="side-item open" onclick="this.classList.toggle('open')">Cartilla <span class="chev">&#9660;</span></div>
-      <div class="side-item" onclick="this.classList.toggle('open')">Maestros <span class="chev">&#9660;</span></div>
-      <div class="side-item" onclick="this.classList.toggle('open')">Procesos <span class="chev">&#9660;</span></div>
-      <div class="side-item open" onclick="this.classList.toggle('open')">Reportes <span class="chev">&#9660;</span></div>
-      <div class="side-item open">Monitoreo <span class="chev">&#9660;</span></div>
-      <div class="side-sub">Monitoreo</div>
-      <div class="side-sub">Detalle de Monitoreo</div>
-      <div class="side-sub">Resumen de Monit...</div>
-      <div class="side-sub">Monitoreo Pivot</div>
-      <div class="side-sub link" id="nav-mapa" onclick="goMapa()">Mapa de Monitoreo</div>
-      <div class="side-item" onclick="this.classList.toggle('open')">Seguridad <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Configuración <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Cartilla <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Maestros <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Procesos <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Reportes <span class="chev">&#9660;</span></div>
+      <div class="side-item open" id="monitoreoHeader" onclick="toggleMonitoreo()">Monitoreo <span class="chev">&#9660;</span></div>
+      <div id="monitoreoSubmenu" style="max-height:260px">
+        <div class="side-sub">Monitoreo</div>
+        <div class="side-sub">Detalle de Monitoreo</div>
+        <div class="side-sub">Resumen de Monit...</div>
+        <div class="side-sub">Monitoreo Pivot</div>
+        <div class="side-sub link" id="nav-mapa" onclick="goMapa()">Mapa de Monitoreo</div>
+      </div>
+      <div class="side-item" onclick="toggleGroup(this)">Seguridad <span class="chev">&#9660;</span></div>
     </div>
 
     <div class="main">
@@ -180,15 +187,54 @@
         <div class="breadcrumb"><b>Inicio</b></div>
         <div class="home-content">
           <div class="home-illustration">
-            <svg viewBox="0 0 300 220" width="100%">
-              <rect x="20" y="120" width="260" height="70" fill="#7a5a3a"/>
-              <polygon points="20,120 150,60 280,120" fill="#5f9153"/>
-              <rect x="60" y="90" width="14" height="30" fill="#2f2f2f"/>
-              <circle cx="67" cy="82" r="9" fill="#e3f7f8" stroke="#2f8fd6" stroke-width="2"/>
-              <rect x="180" y="70" width="14" height="35" fill="#2f2f2f"/>
-              <circle cx="187" cy="60" r="9" fill="#e3f7f8" stroke="#2f8fd6" stroke-width="2"/>
-              <rect x="120" y="140" width="60" height="40" fill="#3b3b3b"/>
-              <rect x="126" y="146" width="48" height="20" fill="#7fd1e0"/>
+            <svg viewBox="0 0 420 260" width="100%">
+              <polygon points="30,190 210,120 390,190 210,260" fill="#5f9153"/>
+              <polygon points="30,190 210,260 210,300 30,230" fill="#7a5a3a" transform="translate(0,-40)"/>
+              <g stroke="#4d7a44" stroke-width="1.4" opacity=".55">
+                <line x1="60" y1="185" x2="180" y2="140"/>
+                <line x1="80" y1="196" x2="200" y2="151"/>
+                <line x1="100" y1="207" x2="220" y2="162"/>
+                <line x1="120" y1="218" x2="240" y2="173"/>
+                <line x1="140" y1="229" x2="260" y2="184"/>
+                <line x1="160" y1="240" x2="280" y2="195"/>
+                <line x1="180" y1="251" x2="300" y2="206"/>
+              </g>
+              <!-- wifi poles -->
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="95" y1="175" x2="95" y2="140"/>
+                <path d="M85 150 a14 14 0 0 1 20 0"/>
+                <path d="M89 156 a8 8 0 0 1 12 0"/>
+              </g>
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="300" y1="150" x2="300" y2="112"/>
+                <path d="M290 122 a14 14 0 0 1 20 0"/>
+                <path d="M294 128 a8 8 0 0 1 12 0"/>
+              </g>
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="200" y1="130" x2="200" y2="96"/>
+                <path d="M190 106 a14 14 0 0 1 20 0"/>
+                <path d="M194 112 a8 8 0 0 1 12 0"/>
+              </g>
+              <!-- dashboard monitor -->
+              <rect x="255" y="55" width="80" height="55" rx="4" fill="#ffffff" stroke="#c7ccd1"/>
+              <rect x="263" y="63" width="64" height="30" fill="#eef6f7"/>
+              <rect x="270" y="80" width="8" height="10" fill="#2e8b57"/>
+              <rect x="282" y="74" width="8" height="16" fill="#2e8b57"/>
+              <rect x="294" y="68" width="8" height="22" fill="#2e8b57"/>
+              <rect x="306" y="72" width="8" height="18" fill="#2e8b57"/>
+              <!-- worker 1 with laptop -->
+              <circle cx="120" cy="185" r="8" fill="#e7b78f"/>
+              <rect x="112" y="193" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <rect x="98" y="205" width="24" height="16" rx="2" fill="#374151"/>
+              <!-- worker 2 -->
+              <circle cx="210" cy="150" r="8" fill="#e7b78f"/>
+              <rect x="202" y="158" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <!-- worker 3 with tablet -->
+              <circle cx="280" cy="170" r="8" fill="#e7b78f"/>
+              <rect x="272" y="178" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <rect x="284" y="182" width="14" height="18" rx="2" fill="#9aa1a6"/>
+              <!-- ground shadow -->
+              <ellipse cx="210" cy="245" rx="150" ry="12" fill="#3b3b3b" opacity=".08"/>
             </svg>
           </div>
           <div class="home-text">
@@ -204,17 +250,16 @@
         <div class="panel-filtros">
           <div class="panel-title">MAPA DE MONITOREOS <button class="btn-buscar" onclick="buscar()">Buscar</button></div>
           <div class="filters-grid">
-            <div class="field"><label><span class="req">*</span>Fecha inicio</label><input readonly id="fIni"></div>
-            <div class="field"><label><span class="req">*</span>Fecha fin</label><input readonly id="fFin"></div>
-            <div class="field"><label>Buscar evaluaciones</label><input placeholder="Buscar evaluaciones"></div>
-            <div class="field"><label>Buscar eventos</label><input placeholder="Buscar eventos"></div>
+            <div class="field"><label><span class="req">*</span>Fecha inicio</label><input type="date" id="fIni" value="2026-07-01"></div>
+            <div class="field"><label><span class="req">*</span>Fecha fin</label><input type="date" id="fFin" value="2026-07-05"></div>
+            <div class="field"><label>Buscar evaluaciones <span class="opt">(Opcional)</span></label><input placeholder="Buscar evaluaciones"></div>
+            <div class="field"><label>Buscar eventos <span class="opt">(Opcional)</span></label><input placeholder="Buscar eventos"></div>
           </div>
           <div class="filters-grid" id="cascadeFilters"></div>
-          <div class="filters-grid2">
-            <div class="field"><label>Fórmula</label><select><option>--Ninguno--</option></select></div>
+          <div class="filters-grid3">
             <div class="field"><label>Opacidad</label><input type="range"></div>
             <div class="field"><label>Ancho</label><input type="range"></div>
-            <div class="field"><label>Tipo de visualización</label><select><option>Seguimiento</option></select></div>
+            <div class="field" id="countInfo" style="font-size:12px;color:#4b5563;"></div>
           </div>
         </div>
         <div class="map-wrapper">
@@ -247,6 +292,25 @@ function doLogin(){
     alertBox.innerHTML = '&#9432; Usuario o contraseña incorrectos.';
   }
 }
+function logout(){
+  document.getElementById('screen-app').style.display='none';
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  var a = document.getElementById('loginAlert');
+  a.className='alert';
+  a.innerHTML='&#9432; Ingresa tu <b>nombre de usuario</b> y <b>contraseña</b>.';
+}
+
+/* ---------- SIDEBAR ---------- */
+function toggleGroup(el){ el.classList.toggle('open'); }
+function toggleMonitoreo(){
+  var header = document.getElementById('monitoreoHeader');
+  var sub = document.getElementById('monitoreoSubmenu');
+  var opening = !header.classList.contains('open');
+  header.classList.toggle('open');
+  sub.style.maxHeight = opening ? '260px' : '0px';
+}
 
 /* ---------- NAV ---------- */
 function setActiveSide(id){
@@ -268,35 +332,60 @@ function goMapa(){
     initMap();
     mapInitialized=true;
     renderCascadeFilters();
-    showCluster(false);
   }
   setTimeout(function(){ if(map) map.invalidateSize(); },150);
 }
 
-/* ---------- MAPA DE MONITOREO (mock data + leaflet) ---------- */
-var FUNDOS = ["Fundo San José","Fundo Santa Rosa"];
-var LOTES = {"Fundo San José":["H5","H6","H7"],"Fundo Santa Rosa":["A1","A2","A3"]};
-var CUARTELES = {"Fundo San José":["C1","C2","C3","C4"],"Fundo Santa Rosa":["C1","C2","C3","C4"]};
+/* ---------- BASE DE DATOS: fundo > lote > cuartel ---------- */
+var FUNDOS_DB = {
+  "CABALLOS 1": { lote:"C1", base:[-14.030,-75.760],
+    cuarteles:{ "CUARTEL 1":{count:8,offset:[-0.006,-0.006]}, "CUARTEL 2.1":{count:5,offset:[-0.006,0.006]}, "CUARTEL 2.2":{count:6,offset:[0.006,-0.006]}, "CUARTEL 3":{count:4,offset:[0.006,0.006]} } },
+  "CORPORA": { lote:"CO", base:[-14.075,-75.700],
+    cuarteles:{ "CUARTEL 1":{count:7,offset:[-0.006,-0.006]}, "CUARTEL 2":{count:9,offset:[-0.006,0.006]}, "CUARTEL 3":{count:5,offset:[0.006,-0.006]}, "CUARTEL 4":{count:6,offset:[0.006,0.006]} } },
+  "ETCHEGARAY": { lote:"ET", base:[-14.020,-75.680],
+    cuarteles:{ "CUARTEL 1":{count:4,offset:[-0.006,-0.006]}, "CUARTEL 2.1":{count:5,offset:[-0.006,0.006]}, "CUARTEL 2.2":{count:7,offset:[0.006,-0.006]}, "CUARTEL 2.3":{count:6,offset:[0.006,0.006]} } }
+};
+var VARIEDADES = ["RED GLOBE","SUGRAONE","AUTUMN ROYAL","TIMPSON","ALLISON","SWEET CELEBRATION"];
+var EVALUADORES = ["MOISES GUZMAN PINGO","ANA TORRES LUNA","CARLOS RUIZ DIAZ","LUIS PEREZ GOMEZ","JOSE FLORES CANO"];
 
-var EVALS = [
-  {id:1,fundo:"Fundo San José",lote:"H5",cuartel:"C1",fecha:"2026-07-03",fechaTxt:"03/07/2026",evaluador:"MOISES GUZMAN PINGO",lat:-14.0345,lng:-75.7510,
-   eventos:[
-     {tipo:"GEOLOCALIZACION",hora:"11:34:21",tiempo:"0.10",datos:{HILERA:"16",PLANTA:"7"}},
-     {tipo:"DIGITACION",hora:"11:15:34",tiempo:"0.12",datos:{LOTE:"H5",FECHA_COSECHA:"03/07/2026",TEMPORABILIDAD:"TEMPRANA",HA:"56.8",TN_HA:"50",D1:"10",D2:"10",D3:"10",D4:"70",XL:"10",J:"10",J2:"10",J3:"10",J4:"10",J5:"50"}}
-   ]},
-  {id:2,fundo:"Fundo San José",lote:"H6",cuartel:"C3",fecha:"2026-07-02",fechaTxt:"02/07/2026",evaluador:"ANA TORRES LUNA",lat:-14.0362,lng:-75.7488,
-   eventos:[{tipo:"GEOLOCALIZACION",hora:"09:20:10",tiempo:"0.08",datos:{HILERA:"8",PLANTA:"3"}}]},
-  {id:3,fundo:"Fundo San José",lote:"H7",cuartel:"C4",fecha:"2026-07-02",fechaTxt:"02/07/2026",evaluador:"LUIS PEREZ GOMEZ",lat:-14.0338,lng:-75.7472,
-   eventos:[{tipo:"DIGITACION",hora:"15:41:02",tiempo:"0.14",datos:{LOTE:"H7",FECHA_COSECHA:"02/07/2026",TEMPORABILIDAD:"MEDIA",HA:"24.1",TN_HA:"38",D1:"25",D2:"25",D3:"25",D4:"25",XL:"12",J:"12",J2:"12",J3:"12",J4:"12",J5:"40"}}]},
-  {id:4,fundo:"Fundo Santa Rosa",lote:"A1",cuartel:"C1",fecha:"2026-07-01",fechaTxt:"01/07/2026",evaluador:"CARLOS RUIZ DIAZ",lat:-14.0648,lng:-75.7155,
-   eventos:[{tipo:"DIGITACION",hora:"14:05:47",tiempo:"0.15",datos:{LOTE:"A1",FECHA_COSECHA:"01/07/2026",TEMPORABILIDAD:"TARDIA",HA:"32.4",TN_HA:"42",D1:"20",D2:"20",D3:"20",D4:"40",XL:"15",J:"15",J2:"15",J3:"15",J4:"15",J5:"25"}}]}
-];
-
-var st = {fundo:"Todos",lote:"Todos",cuartel:"Todos",results:EVALS.slice(),detailPin:null};
+function generarEvaluaciones(){
+  var out = []; var idc = 1;
+  Object.keys(FUNDOS_DB).forEach(function(fundo){
+    var fd = FUNDOS_DB[fundo];
+    Object.keys(fd.cuarteles).forEach(function(cuartel){
+      var cfg = fd.cuarteles[cuartel];
+      var baseLat = fd.base[0] + cfg.offset[0];
+      var baseLng = fd.base[1] + cfg.offset[1];
+      for(var i=0;i<cfg.count;i++){
+        var isResumen = (i === cfg.count-1);
+        var lat = baseLat + (Math.random()-0.5)*0.003;
+        var lng = baseLng + (Math.random()-0.5)*0.003;
+        var evaluador = EVALUADORES[idc % EVALUADORES.length];
+        var variedad = VARIEDADES[idc % VARIEDADES.length];
+        var dia = 1 + (idc % 5);
+        var fecha = "2026-07-0"+dia;
+        var fechaTxt = "0"+dia+"/07/2026";
+        if(isResumen){
+          out.push({id:idc,fundo:fundo,lote:fd.lote,cuartel:cuartel,variedad:variedad,fecha:fecha,fechaTxt:fechaTxt,evaluador:evaluador,lat:lat,lng:lng,
+            eventos:[{tipo:"DIGITACION",hora:(9+idc%3)+":"+String(10+idc%40).padStart(2,'0')+":00",tiempo:(0.10+(idc%5)*0.01).toFixed(2),
+              datos:{LOTE:fd.lote,FECHA_COSECHA:fechaTxt,TEMPORABILIDAD:["TEMPRANA","MEDIA","TARDIA"][idc%3],HA:(20+idc%40).toFixed(1),TN_HA:String(30+idc%20),D1:"20",D2:"20",D3:"20",D4:"40",XL:"15",J:"15",J2:"15",J3:"15",J4:"15",J5:"25"}}]});
+        } else {
+          out.push({id:idc,fundo:fundo,lote:fd.lote,cuartel:cuartel,variedad:variedad,fecha:fecha,fechaTxt:fechaTxt,evaluador:evaluador,lat:lat,lng:lng,
+            eventos:[{tipo:"GEOLOCALIZACION",hora:"0"+(8+idc%3)+":"+String(10+idc%50).padStart(2,'0')+":00",tiempo:(0.05+(idc%5)*0.01).toFixed(2),
+              datos:{HILERA:String(1+idc%30),PLANTA:String(1+idc%12)}}]});
+        }
+        idc++;
+      }
+    });
+  });
+  return out;
+}
+var EVALS = generarEvaluaciones();
+var st = {fundo:"Todos",lote:"Todos",cuartel:"Todos",variedad:"Todos",results:[],detailPin:null};
 var map, clusterLayer, pinsLayer;
 
 function initMap(){
-  map = L.map('mapReal',{zoomControl:true}).setView([-14.05,-75.73],13);
+  map = L.map('mapReal',{zoomControl:true}).setView([-19,-70],5);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
     maxZoom:19, attribution:'Tiles &copy; Esri'
   }).addTo(map);
@@ -304,35 +393,44 @@ function initMap(){
   pinsLayer = L.layerGroup();
 }
 function centroid(list){
-  if(list.length===0) return [-14.05,-75.73];
+  if(list.length===0) return [-19,-70];
   var la=0,lo=0;
   list.forEach(function(e){la+=e.lat;lo+=e.lng;});
   return [la/list.length, lo/list.length];
 }
-function lotesFor(f){ if(f==="Todos"){var a=[];FUNDOS.forEach(function(x){LOTES[x].forEach(function(l){if(a.indexOf(l)<0)a.push(l);});});return a;} return LOTES[f]||[]; }
-function cuartelesFor(f){ if(f==="Todos"){var a=[];FUNDOS.forEach(function(x){CUARTELES[x].forEach(function(c){if(a.indexOf(c)<0)a.push(c);});});return a;} return CUARTELES[f]||[]; }
+function lotesFor(fundo){ if(fundo==="Todos"){ return Object.keys(FUNDOS_DB).map(function(f){return FUNDOS_DB[f].lote;}); } return [FUNDOS_DB[fundo].lote]; }
+function cuartelesFor(fundo){ if(fundo==="Todos"){ var a=[]; Object.keys(FUNDOS_DB).forEach(function(f){ Object.keys(FUNDOS_DB[f].cuarteles).forEach(function(c){ if(a.indexOf(c)<0) a.push(c); }); }); return a; } return Object.keys(FUNDOS_DB[fundo].cuarteles); }
 function matchScope(e){
   if(st.fundo!=="Todos" && e.fundo!==st.fundo) return false;
   if(st.lote!=="Todos" && e.lote!==st.lote) return false;
   if(st.cuartel!=="Todos" && e.cuartel!==st.cuartel) return false;
+  if(st.variedad!=="Todos" && e.variedad!==st.variedad) return false;
+  var fi = document.getElementById('fIni').value;
+  var ff = document.getElementById('fFin').value;
+  if(fi && e.fecha < fi) return false;
+  if(ff && e.fecha > ff) return false;
   return true;
 }
-function fechaRango(){
-  var scope = EVALS.filter(matchScope);
-  if(scope.length===0) return ["--","--"];
-  var ord = scope.slice().sort(function(a,b){return a.fecha<b.fecha?-1:1;});
-  return [ord[0].fechaTxt, ord[ord.length-1].fechaTxt];
+function setFundo(v){ st.fundo=v; st.lote="Todos"; st.cuartel="Todos"; renderCascadeFilters(); }
+function setLote(v){ st.lote=v; st.cuartel="Todos"; renderCascadeFilters(); }
+function setCuartel(v){ st.cuartel=v; renderCascadeFilters(); }
+function setVariedad(v){ st.variedad=v; renderCascadeFilters(); }
+
+function buscar(){
+  st.results = EVALS.filter(matchScope);
+  st.detailPin = null;
+  renderDetail();
+  renderCascadeFilters();
+  showClusterResult();
 }
-function setFundo(v){ st.fundo=v; st.lote="Todos"; st.cuartel="Todos"; st.detailPin=null; renderCascadeFilters(); renderDetail(); showCluster(true); }
-function setLote(v){ st.lote=v; st.cuartel="Todos"; st.detailPin=null; renderCascadeFilters(); renderDetail(); showCluster(true); }
-function setCuartel(v){ st.cuartel=v; st.detailPin=null; renderCascadeFilters(); renderDetail(); showCluster(true); }
-function buscar(){ st.results = EVALS.filter(matchScope); st.detailPin=null; renderCascadeFilters(); renderDetail(); showCluster(true); }
 function verDetalle(id){ st.detailPin=id; map.closePopup(); renderDetail(); document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'start'}); }
 function cerrarDetalle(){ st.detailPin=null; renderDetail(); }
 
 function clusterIcon(n){ return L.divIcon({html:"<div class='cluster-badge'>"+n+"</div>",className:'',iconSize:[44,44],iconAnchor:[22,22]}); }
-function pinIcon(){
-  var svg = "<svg class='pin-icon' viewBox='0 0 24 24' fill='#2f8fd6'><path d='M12 0C7.6 0 4 3.6 4 8c0 5.4 8 16 8 16s8-10.6 8-16c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z'/></svg>";
+function markerIconFor(e){
+  var tipo = e.eventos[0].tipo;
+  var fill = tipo === "DIGITACION" ? "#e67e22" : "#2f8fd6";
+  var svg = "<svg class='pin-icon' viewBox='0 0 24 24' fill='"+fill+"'><path d='M12 0C7.6 0 4 3.6 4 8c0 5.4 8 16 8 16s8-10.6 8-16c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z'/></svg>";
   return L.divIcon({html:svg,className:'',iconSize:[30,30],iconAnchor:[15,30]});
 }
 function popupHtml(e){
@@ -347,25 +445,26 @@ function popupHtml(e){
   html += "<a class='popup-verdet' href='#' onclick='verDetalle("+e.id+");return false'>Ver Detalle</a>";
   return html;
 }
-function showCluster(flyTo){
+function showClusterResult(){
   clusterLayer.clearLayers(); pinsLayer.clearLayers();
   if(map.hasLayer(pinsLayer)) map.removeLayer(pinsLayer);
   if(!map.hasLayer(clusterLayer)) clusterLayer.addTo(map);
   document.getElementById('backBtn').style.display='none';
   var n = st.results.length;
-  if(n===0){ if(flyTo) map.setView([-14.05,-75.73],13); return; }
+  document.getElementById('countInfo').innerText = n + " evaluación(es) encontradas";
+  if(n===0){ map.flyTo([-19,-70],5,{duration:0.6}); return; }
   var c = centroid(st.results);
   var marker = L.marker(c,{icon:clusterIcon(n)});
   marker.on('click', openCluster);
   marker.addTo(clusterLayer);
-  if(flyTo) map.flyTo(c,13,{duration:0.6});
+  map.flyTo(c,13,{duration:0.7});
 }
 function openCluster(){
   map.removeLayer(clusterLayer);
   pinsLayer.clearLayers(); pinsLayer.addTo(map);
   var bounds = [];
   st.results.forEach(function(e){
-    var m = L.marker([e.lat,e.lng],{icon:pinIcon()});
+    var m = L.marker([e.lat,e.lng],{icon:markerIconFor(e)});
     m.bindPopup(popupHtml(e),{closeButton:true,maxWidth:230});
     m.addTo(pinsLayer);
     bounds.push([e.lat,e.lng]);
@@ -374,17 +473,26 @@ function openCluster(){
   if(bounds.length===1){ map.flyTo(bounds[0],17,{duration:0.6}); }
   else { map.flyToBounds(bounds,{padding:[60,60],duration:0.6,maxZoom:17}); }
 }
-function backToMap(){ showCluster(true); }
+function backToMap(){
+  if(map.hasLayer(pinsLayer)) map.removeLayer(pinsLayer);
+  if(!map.hasLayer(clusterLayer)) clusterLayer.addTo(map);
+  document.getElementById('backBtn').style.display='none';
+  var n = st.results.length;
+  if(n>0){
+    var c = centroid(st.results);
+    var marker = L.marker(c,{icon:clusterIcon(n)});
+    marker.on('click', openCluster);
+    marker.addTo(clusterLayer);
+    map.flyTo(c,13,{duration:0.6});
+  }
+}
 
 function renderCascadeFilters(){
   var lotes = lotesFor(st.fundo), cuarteles = cuartelesFor(st.fundo);
-  var rango = fechaRango();
-  document.getElementById("fIni").value = rango[0];
-  document.getElementById("fFin").value = rango[1];
   var h = "";
   h += "<div class='field'><label><span class='req'>*</span>Seleccione un fundo</label><select onchange='setFundo(this.value)'>";
   h += "<option value='Todos'"+(st.fundo==="Todos"?" selected":"")+">--Todos--</option>";
-  FUNDOS.forEach(function(f){ h += "<option value='"+f+"'"+(st.fundo===f?" selected":"")+">"+f+"</option>"; });
+  Object.keys(FUNDOS_DB).forEach(function(f){ h += "<option value='"+f+"'"+(st.fundo===f?" selected":"")+">"+f+"</option>"; });
   h += "</select></div>";
   h += "<div class='field'><label><span class='req'>*</span>Seleccione un lote</label><select onchange='setLote(this.value)'>";
   h += "<option value='Todos'"+(st.lote==="Todos"?" selected":"")+">--Todos--</option>";
@@ -394,7 +502,10 @@ function renderCascadeFilters(){
   h += "<option value='Todos'"+(st.cuartel==="Todos"?" selected":"")+">--Todos--</option>";
   cuarteles.forEach(function(c){ h += "<option value='"+c+"'"+(st.cuartel===c?" selected":"")+">"+c+"</option>"; });
   h += "</select></div>";
-  h += "<div class='field'><label>&nbsp;</label><div style='font-size:12px;color:#4b5563;padding-top:8px'>"+st.results.length+" evaluación(es) coinciden con el filtro</div></div>";
+  h += "<div class='field'><label>Variedad</label><select onchange='setVariedad(this.value)'>";
+  h += "<option value='Todos'"+(st.variedad==="Todos"?" selected":"")+">--Todos--</option>";
+  VARIEDADES.forEach(function(v){ h += "<option value='"+v+"'"+(st.variedad===v?" selected":"")+">"+v+"</option>"; });
+  h += "</select></div>";
   document.getElementById("cascadeFilters").innerHTML = h;
 }
 function renderDetail(){
