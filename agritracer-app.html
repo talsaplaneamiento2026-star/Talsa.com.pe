@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriTracer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --teal:#0f8a7f; --teal-dark:#0b6a61; --bg-cyan:#e3f7f8;
+    --text:#1f2937; --muted:#6b7280; --border:#e2e5e9;
+    --danger:#c0392b; --card:#ffffff; --page:#f4f6f7; --green:#3a9d5d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--page);color:var(--text);}
+  a{color:var(--teal-dark);text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+
+  /* ===== LOGIN ===== */
+  #screen-login{display:flex;min-height:100vh;}
+  .login-left{flex:0 0 42%;position:relative;color:#fff;
+    background:
+      linear-gradient(180deg, rgba(10,20,12,.55), rgba(10,20,12,.75)),
+      repeating-linear-gradient(78deg, #3c5a3f 0px, #3c5a3f 18px, #2e4831 18px, #2e4831 22px);
+    padding:32px;display:flex;flex-direction:column;justify-content:space-between;}
+  .login-logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:600;}
+  .login-logo .ico{width:24px;height:24px;border:2.5px solid #fff;border-radius:6px;}
+  .login-tag{font-size:15px;line-height:1.5;max-width:380px;}
+  .login-foot{font-size:12.5px;display:flex;justify-content:space-between;opacity:.9;}
+  .login-foot a{color:#fff;text-decoration:underline;margin-left:14px;}
+  .login-right{flex:1;background:linear-gradient(135deg,#ffffff 40%,#cdf3f5 100%);display:flex;align-items:center;justify-content:center;}
+  .login-box{width:380px;}
+  .login-box h1{font-size:24px;font-weight:600;text-align:center;margin:0 0 22px;color:#1f2937;}
+  .alert{background:#e8f2fc;border:1px solid #bcdcf7;color:#1f2937;font-size:13px;border-radius:6px;padding:10px 14px;margin-bottom:16px;}
+  .alert.error{background:#fdecea;border-color:#f3b6b0;color:#8a2c22;}
+  .login-field{position:relative;margin-bottom:16px;}
+  .login-field input{width:100%;height:42px;border:1px solid #d3d8dc;border-radius:8px;padding:0 40px 0 14px;font-size:14px;}
+  .login-field .eye{position:absolute;right:12px;top:12px;color:#9aa1a6;font-size:14px;background:none;border:none;cursor:pointer;}
+  .login-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .login-row a{font-size:13px;}
+  .btn-ingresar{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:7px;font-size:14px;font-weight:600;}
+  .btn-ingresar:hover{background:var(--teal-dark);}
+  .yawi-mark{text-align:center;margin-top:48px;font-size:26px;font-weight:700;color:var(--green);font-family:Georgia,serif;letter-spacing:1px;}
+
+  /* ===== APP SHELL ===== */
+  #screen-app{display:none;min-height:100vh;flex-direction:column;}
+  .topbar{height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 20px;flex:0 0 auto;}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;color:var(--text);}
+  .logo .ico{width:20px;height:20px;border:2px solid var(--teal);border-radius:4px;}
+  .badge-test{border:1px solid var(--danger);color:var(--danger);font-size:12px;padding:3px 10px;border-radius:14px;}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:14px;}
+  .top-pill{border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:#374151;background:#fff;}
+  .icon-circle{width:32px;height:32px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:14px;}
+  .avatar{width:32px;height:32px;border-radius:50%;background:#d9dde1;color:#555;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+  .btn-salir{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);color:#374151;font-size:13px;font-weight:600;padding:7px 14px;border-radius:7px;}
+  .btn-salir:hover{background:#fdecea;border-color:#f3b6b0;color:var(--danger);}
+
+  .layout{display:flex;flex:1;min-height:0;}
+  .sidebar{width:230px;background:#fff;border-right:1px solid var(--border);flex:0 0 auto;padding:14px 0;}
+  .side-logo{font-size:24px;font-weight:700;color:var(--green);font-family:Georgia,serif;padding:0 20px 18px;}
+  .side-item{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;font-size:14px;color:#374151;cursor:pointer;}
+  .side-item:hover{background:#f7f8f8;}
+  .side-item.active{background:#e3f7f8;color:var(--teal-dark);font-weight:600;border-right:3px solid var(--teal);}
+  .side-item .chev{font-size:11px;color:#9aa1a6;transition:transform .15s;}
+  .side-item.open .chev{transform:rotate(180deg);}
+  .side-sub{padding-left:38px;font-size:13.5px;color:#374151;padding-top:8px;padding-bottom:8px;cursor:default;}
+  .side-sub.link{color:var(--teal-dark);cursor:pointer;font-weight:500;}
+  .side-sub.link:hover{text-decoration:underline;}
+  .side-sub.active{color:var(--teal-dark);font-weight:700;}
+  #monitoreoSubmenu{overflow:hidden;transition:max-height .2s ease;}
+
+  .main{flex:1;overflow-y:auto;min-width:0;}
+  .breadcrumb{padding:12px 20px 0;font-size:13px;color:var(--muted);}
+  .breadcrumb b{color:var(--text);font-weight:600;}
+
+  /* home */
+  .home-content{display:flex;align-items:center;gap:60px;padding:60px 40px;}
+  .home-illustration{flex:0 0 420px;}
+  .home-text{max-width:520px;font-size:15px;line-height:1.7;color:#374151;}
+  .home-text .highlight{color:#2e8b57;font-weight:600;}
+
+  /* mapa */
+  .panel-filtros{margin:12px 20px 0;background:var(--bg-cyan);border-radius:8px;padding:16px 20px;}
+  .panel-title{font-weight:700;font-size:13px;letter-spacing:.3px;color:#2c3e42;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+  .btn-buscar{background:var(--teal);color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;}
+  .btn-buscar:hover{background:var(--teal-dark);}
+  .filters-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:12px;}
+  .filters-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end;}
+  .field label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
+  .field label .req{color:var(--danger);margin-right:2px;}
+  .field label .opt{font-weight:400;color:#6b7280;}
+  .field select, .field input{width:100%;height:34px;border:1px solid #cfd6db;border-radius:6px;padding:0 10px;font-size:13px;background:#fff;color:var(--text);}
+
+  .map-wrapper{margin:14px 20px 20px;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative;}
+  #mapReal{height:480px;width:100%;background:#12324a;}
+  .back-btn{position:absolute;top:12px;left:56px;z-index:500;background:#fff;border:1px solid #d6d6d6;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;color:#374151;display:none;align-items:center;gap:6px;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+  .cluster-badge{width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;border:2px solid #fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(58,157,93,.28);cursor:pointer;}
+  .pin-icon svg{width:30px;height:30px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+  .leaflet-popup-content{margin:12px 14px;font-size:12.5px;width:210px !important;}
+  .popup-label{color:#8a9096;font-weight:600;margin:8px 0 2px;}
+  .popup-label:first-child{margin-top:0;}
+  .popup-val{color:#242a2e;}
+  .popup-emu{display:block;background:var(--green);color:#fff;font-size:11.5px;font-weight:600;border-radius:5px;padding:5px 0;width:100%;text-align:center;margin:10px 0 8px;}
+  .popup-verdet{display:block;text-align:left;font-size:12.5px;color:var(--teal-dark);font-weight:600;}
+
+  .detail-panel{margin:0 20px 24px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px 22px;}
+  .detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .detail-head .who{font-size:14px;}
+  .detail-head .who b{font-weight:600;}
+  .detail-head .close-full{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:13px;color:#374151;}
+  .accordion{border-top:1px solid var(--border);padding:12px 0;}
+  .accordion .hd{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;color:#374151;}
+  .accordion.collapsed .hd{color:#6b7280;}
+  .accordion .body{margin-top:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 18px;}
+  .accordion .body .f label{display:block;font-size:11.5px;font-weight:600;color:#374151;margin-bottom:4px;}
+  .accordion .body .f input{width:100%;height:32px;border:1px solid #cfd6db;border-radius:6px;padding:0 9px;font-size:13px;background:#fff;}
+  .accordion .body .f.check{display:flex;align-items:center;gap:8px;padding-top:20px;}
+
+  @media (max-width:900px){
+    .filters-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .filters-grid3{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .accordion .body{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .home-content{flex-direction:column;padding:30px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="screen-login">
+  <div class="login-left">
+    <div class="login-logo"><span class="ico"></span>AgriTracer</div>
+    <div class="login-tag">Plataforma digital para la gestión eficiente de operaciones agrícolas.</div>
+    <div class="login-foot"><span>&copy; 2026 YAWI</span><span><a href="#">Acerca De</a><a href="#">Contáctanos</a></span></div>
+  </div>
+  <div class="login-right">
+    <div class="login-box">
+      <h1>Iniciar Sesión</h1>
+      <div class="alert" id="loginAlert">&#9432; Ingresa tu <b>nombre de usuario</b> y <b>contraseña</b>.</div>
+      <div class="login-field"><input type="text" id="loginUser" placeholder="Usuario"></div>
+      <div class="login-field"><input type="password" id="loginPass" placeholder="Contraseña"><button class="eye" onclick="togglePass()">&#128065;</button></div>
+      <div class="login-row"><a href="#">Olvidé mi contraseña</a><button class="btn-ingresar" onclick="doLogin()">Ingresar</button></div>
+      <div class="yawi-mark">yawi</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="screen-app">
+  <div class="topbar">
+    <div class="logo"><span class="ico"></span>AgriTracer</div>
+    <span class="badge-test">&#9888; Entorno de Pruebas</span>
+    <div class="top-right">
+      <span class="top-pill">Accesos rápidos</span>
+      <span class="top-pill">Agricola Leo's Produce SPA</span>
+      <span class="icon-circle">&#128276;</span>
+      <span class="icon-circle">ES</span>
+      <span class="avatar">M</span>
+      <button class="btn-salir" onclick="logout()">&#10148; Salir</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="side-logo">yawi</div>
+      <div class="side-item active" id="nav-inicio" onclick="goHome()">Inicio</div>
+      <div class="side-item" onclick="toggleGroup(this)">Configuración <span class="chev">&#9660;</span></div>
+      <div class="side-item open" onclick="toggleGroup(this)">Cartilla <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Maestros <span class="chev">&#9660;</span></div>
+      <div class="side-item" onclick="toggleGroup(this)">Procesos <span class="chev">&#9660;</span></div>
+      <div class="side-item open" id="reportesHeader" onclick="toggleReportes()">Reportes <span class="chev">&#9660;</span></div>
+      <div id="reportesSubmenu" style="max-height:100px">
+        <div class="side-sub link" id="nav-importar" onclick="goImportar()">Importar Datos</div>
+        <div class="side-sub link" id="nav-reportes" onclick="goReportes()">Reporte Semanal</div>
+      </div>
+      <div class="side-item open" id="monitoreoHeader" onclick="toggleMonitoreo()">Monitoreo <span class="chev">&#9660;</span></div>
+      <div id="monitoreoSubmenu" style="max-height:260px">
+        <div class="side-sub">Monitoreo</div>
+        <div class="side-sub">Detalle de Monitoreo</div>
+        <div class="side-sub">Resumen de Monit...</div>
+        <div class="side-sub">Monitoreo Pivot</div>
+        <div class="side-sub link" id="nav-mapa" onclick="goMapa()">Mapa de Monitoreo</div>
+      </div>
+      <div class="side-item" onclick="toggleGroup(this)">Seguridad <span class="chev">&#9660;</span></div>
+    </div>
+
+    <div class="main">
+      <!-- HOME -->
+      <div id="view-home">
+        <div class="breadcrumb"><b>Inicio</b></div>
+        <div class="home-content">
+          <div class="home-illustration">
+            <svg viewBox="0 0 420 260" width="100%">
+              <polygon points="30,190 210,120 390,190 210,260" fill="#5f9153"/>
+              <polygon points="30,190 210,260 210,300 30,230" fill="#7a5a3a" transform="translate(0,-40)"/>
+              <g stroke="#4d7a44" stroke-width="1.4" opacity=".55">
+                <line x1="60" y1="185" x2="180" y2="140"/>
+                <line x1="80" y1="196" x2="200" y2="151"/>
+                <line x1="100" y1="207" x2="220" y2="162"/>
+                <line x1="120" y1="218" x2="240" y2="173"/>
+                <line x1="140" y1="229" x2="260" y2="184"/>
+                <line x1="160" y1="240" x2="280" y2="195"/>
+                <line x1="180" y1="251" x2="300" y2="206"/>
+              </g>
+              <!-- wifi poles -->
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="95" y1="175" x2="95" y2="140"/>
+                <path d="M85 150 a14 14 0 0 1 20 0"/>
+                <path d="M89 156 a8 8 0 0 1 12 0"/>
+              </g>
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="300" y1="150" x2="300" y2="112"/>
+                <path d="M290 122 a14 14 0 0 1 20 0"/>
+                <path d="M294 128 a8 8 0 0 1 12 0"/>
+              </g>
+              <g stroke="#2f8fd6" stroke-width="2" fill="none">
+                <line x1="200" y1="130" x2="200" y2="96"/>
+                <path d="M190 106 a14 14 0 0 1 20 0"/>
+                <path d="M194 112 a8 8 0 0 1 12 0"/>
+              </g>
+              <!-- dashboard monitor -->
+              <rect x="255" y="55" width="80" height="55" rx="4" fill="#ffffff" stroke="#c7ccd1"/>
+              <rect x="263" y="63" width="64" height="30" fill="#eef6f7"/>
+              <rect x="270" y="80" width="8" height="10" fill="#2e8b57"/>
+              <rect x="282" y="74" width="8" height="16" fill="#2e8b57"/>
+              <rect x="294" y="68" width="8" height="22" fill="#2e8b57"/>
+              <rect x="306" y="72" width="8" height="18" fill="#2e8b57"/>
+              <!-- worker 1 with laptop -->
+              <circle cx="120" cy="185" r="8" fill="#e7b78f"/>
+              <rect x="112" y="193" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <rect x="98" y="205" width="24" height="16" rx="2" fill="#374151"/>
+              <!-- worker 2 -->
+              <circle cx="210" cy="150" r="8" fill="#e7b78f"/>
+              <rect x="202" y="158" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <!-- worker 3 with tablet -->
+              <circle cx="280" cy="170" r="8" fill="#e7b78f"/>
+              <rect x="272" y="178" width="16" height="26" rx="4" fill="#2f6fb0"/>
+              <rect x="284" y="182" width="14" height="18" rx="2" fill="#9aa1a6"/>
+              <!-- ground shadow -->
+              <ellipse cx="210" cy="245" rx="150" ry="12" fill="#3b3b3b" opacity=".08"/>
+            </svg>
+          </div>
+          <div class="home-text">
+            Plataforma que facilita y da soporte a la Gestión Agrícola en tiempo real de fácil uso y segura. Permite coordinar las operaciones, realizar registros, medir indicadores y generar reportes a fin de controlar los procesos agrícolas desde un solo sistema integrado y acompañado de un soporte continuo.
+            <p class="highlight">AGRITRACER genera un mayor control sobre la gestión agrícola a través de diferentes módulos que brindan información para la toma adecuada de decisiones.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAPA DE MONITOREO -->
+      <div id="view-mapa" style="display:none">
+        <div class="breadcrumb">Inicio / Cartilla / Reportes / <b>Mapa de Monitoreo</b></div>
+        <div class="panel-filtros">
+          <div class="panel-title">MAPA DE MONITOREOS <button class="btn-buscar" onclick="buscar()">Buscar</button></div>
+          <div class="filters-grid">
+            <div class="field"><label><span class="req">*</span>Fecha inicio</label><input type="date" id="fIni" value="2026-07-01"></div>
+            <div class="field"><label><span class="req">*</span>Fecha fin</label><input type="date" id="fFin" value="2026-07-05"></div>
+            <div class="field"><label>Buscar evaluaciones <span class="opt">(Opcional)</span></label><input placeholder="Buscar evaluaciones"></div>
+            <div class="field"><label>Buscar eventos <span class="opt">(Opcional)</span></label><input placeholder="Buscar eventos"></div>
+          </div>
+          <div class="filters-grid3" id="cascadeFilters"></div>
+          <div class="filters-grid3">
+            <div class="field"><label>Opacidad</label><input type="range"></div>
+            <div class="field"><label>Ancho</label><input type="range"></div>
+            <div class="field" id="countInfo" style="font-size:12px;color:#4b5563;"></div>
+          </div>
+        </div>
+        <div class="map-wrapper">
+          <button class="back-btn" id="backBtn" onclick="backToMap()">&larr; Mapa</button>
+          <div id="mapReal"></div>
+        </div>
+        <div style="margin:0 20px 14px;font-size:12.5px;color:#4b5563;display:flex;gap:20px;align-items:center">
+          <span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#2f8fd6;margin-right:6px;vertical-align:middle"></span>Evaluación (Hilera / Planta)</span>
+          <span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#e67e22;margin-right:6px;vertical-align:middle"></span>Resumen de cosecha (Digitación)</span>
+        </div>
+        <div id="detailPanel"></div>
+      </div>
+
+      <!-- IMPORTAR EXCEL -->
+      <div id="view-import" style="display:none">
+        <div class="breadcrumb">Inicio / <b>Reportes</b> / Importar Datos</div>
+        <div class="panel-filtros" style="max-width:640px">
+          <div class="panel-title">IMPORTAR EXCEL DE PRODUCCIÓN</div>
+          <p style="font-size:13px;color:#374151;margin:0 0 14px;line-height:1.5">Sube el archivo Excel (bisemanal) con las columnas <b>Campo, Especie, Estado, Cuartel, Variedad</b> y los días de la semana con sus kilos. Se detectan automáticamente las columnas de días que traiga el archivo.</p>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="margin-bottom:14px;font-size:13px">
+          <div><button class="btn-buscar" onclick="importarExcel()">Importar</button></div>
+          <div id="importStatus" style="margin-top:14px;font-size:13px;"></div>
+        </div>
+      </div>
+
+      <!-- REPORTE SEMANAL -->
+      <div id="view-reportes" style="display:none">
+        <div class="breadcrumb">Inicio / <b>Reportes</b> / Reporte Semanal</div>
+        <div class="panel-filtros">
+          <div class="panel-title">REPORTE DE PRODUCCIÓN <span id="semanaActualLabel" style="font-weight:600;color:#0b6a61;font-size:12.5px"></span></div>
+          <div class="filters-grid" id="reportFilters"></div>
+        </div>
+        <div style="margin:14px 20px 24px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 20px">
+          <div id="reportToolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px"></div>
+          <div id="resumenSemana" style="display:flex;gap:22px;margin-bottom:16px;font-size:13px;color:#374151;flex-wrap:wrap"></div>
+          <div style="overflow-x:auto"><table id="reportTable" style="width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap"></table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- AUTH ---------- */
+var USERS = {"mguzman":"Talsa2026"};
+function togglePass(){
+  var p = document.getElementById('loginPass');
+  p.type = p.type === 'password' ? 'text' : 'password';
+}
+function doLogin(){
+  var u = document.getElementById('loginUser').value.trim();
+  var p = document.getElementById('loginPass').value;
+  var alertBox = document.getElementById('loginAlert');
+  if(USERS[u] && USERS[u]===p){
+    document.getElementById('screen-login').style.display='none';
+    document.getElementById('screen-app').style.display='flex';
+    goHome();
+  } else {
+    alertBox.className = 'alert error';
+    alertBox.innerHTML = '&#9432; Usuario o contraseña incorrectos.';
+  }
+}
+function logout(){
+  document.getElementById('screen-app').style.display='none';
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  var a = document.getElementById('loginAlert');
+  a.className='alert';
+  a.innerHTML='&#9432; Ingresa tu <b>nombre de usuario</b> y <b>contraseña</b>.';
+}
+
+/* ---------- SIDEBAR ---------- */
+function toggleGroup(el){ el.classList.toggle('open'); }
+function toggleMonitoreo(){
+  var header = document.getElementById('monitoreoHeader');
+  var sub = document.getElementById('monitoreoSubmenu');
+  var opening = !header.classList.contains('open');
+  header.classList.toggle('open');
+  sub.style.maxHeight = opening ? '260px' : '0px';
+}
+
+function toggleReportes(){
+  var header = document.getElementById('reportesHeader');
+  var sub = document.getElementById('reportesSubmenu');
+  var opening = !header.classList.contains('open');
+  header.classList.toggle('open');
+  sub.style.maxHeight = opening ? '100px' : '0px';
+}
+
+/* ---------- NAV ---------- */
+var ALL_VIEWS = ['view-home','view-mapa','view-import','view-reportes'];
+var ALL_NAVS = ['nav-inicio','nav-mapa','nav-importar','nav-reportes'];
+function setActiveSide(id){
+  ALL_NAVS.forEach(function(n){ document.getElementById(n).classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+function showView(viewId){
+  ALL_VIEWS.forEach(function(v){ document.getElementById(v).style.display = (v===viewId) ? 'block' : 'none'; });
+}
+function goHome(){
+  showView('view-home');
+  setActiveSide('nav-inicio');
+}
+var mapInitialized=false;
+function goMapa(){
+  showView('view-mapa');
+  setActiveSide('nav-mapa');
+  if(!mapInitialized){
+    initMap();
+    mapInitialized=true;
+    renderCascadeFilters();
+  }
+  setTimeout(function(){ if(map) map.invalidateSize(); },150);
+}
+function goImportar(){
+  showView('view-import');
+  setActiveSide('nav-importar');
+}
+function goReportes(){
+  showView('view-reportes');
+  setActiveSide('nav-reportes');
+  renderReportFilters();
+  renderReportTable();
+}
+
+/* ---------- BASE DE DATOS REAL: fundo > lote > variedad ---------- */
+var RAW_LOTES = [
+["ANDACOLLO","AN CUARTEL 1","CHERRYPLUM I"],
+["ANDACOLLO","AN CUARTEL 1","SANTINA"],
+["CABALLOS 1","C1 CUARTEL 1","EARLY BING"],
+["CABALLOS 1","C1 CUARTEL 1","EARLY BING *"],
+["CABALLOS 1","C1 CUARTEL 2.1","SANTINA"],
+["CABALLOS 1","C1 CUARTEL 2.2","SANTINA"],
+["CABALLOS 1","C1 CUARTEL 3","72"],
+["CABALLOS 1","C1 CUARTEL 3","821"],
+["CABALLOS 1","C1 CUARTEL 3","SANTINA"],
+["CABALLOS 2","C2 CUARTEL 1","SANTINA"],
+["CORPORA","CO CUARTEL 1","9M147"],
+["CORPORA","CO CUARTEL 2","EARLY BING"],
+["CORPORA","CO CUARTEL 3","VARIAS TALSA"],
+["CORPORA","CO CUARTEL 4","VARIAS TALSA"],
+["DON LEO","DL CUARTEL 1","EARLY BING"],
+["DON LEO","DL CUARTEL 1","EARLY BING *"],
+["DON LEO 2","DL2 CUARTEL 1","CHERRYPLUM I"],
+["DON LEO 2","DL2 CUARTEL 1","SANTINA"],
+["ETCHEGARAY","ET CUARTEL 1","SANTINA"],
+["ETCHEGARAY","ET CUARTEL 2.1","CHERRYPLUM I"],
+["ETCHEGARAY","ET CUARTEL 2.1","CHERRYPLUM II"],
+["ETCHEGARAY","ET CUARTEL 2.1","FLAVOR BLAST"],
+["ETCHEGARAY","ET CUARTEL 2.2","CHERRYPLUM I"],
+["ETCHEGARAY","ET CUARTEL 2.3","CHERRYPLUM I"],
+["FEDERICO 1","F1 CUARTEL 1","CHERRYPLUM I"],
+["FEDERICO 1","F1 CUARTEL 1","CHERRYPLUM II"],
+["FEDERICO 1","F1 CUARTEL 1","FLAVOR BLAST"],
+["FEDERICO 2","F2 CUARTEL 1.1","2105"],
+["FEDERICO 2","F2 CUARTEL 1.1","CHERRYPLUM I"],
+["FEDERICO 2","F2 CUARTEL 1.1","CHERRYPLUM II"],
+["FEDERICO 2","F2 CUARTEL 1.1","FLAVOR BLAST"],
+["FEDERICO 2","F2 CUARTEL 1.2","2105"],
+["FEDERICO 2","F2 CUARTEL 1.2","CHERRYPLUM I"],
+["FEDERICO 2","F2 CUARTEL 1.2","CHERRYPLUM II"],
+["FEDERICO 2","F2 CUARTEL 1.2","FLAVOR BLAST"],
+["FEDERICO 2","F2 CUARTEL 1.3","2105"],
+["FEDERICO 2","F2 CUARTEL 1.3","CHERRYPLUM I"],
+["FEDERICO 2","F2 CUARTEL 1.3","CHERRYPLUM II"],
+["FEDERICO 2","F2 CUARTEL 1.3","FLAVOR BLAST"],
+["FEDERICO 2","F2 CUARTEL 1.4","CHERRYPLUM I"],
+["GENERALES","LOTE GENERALES","VARIAS TALSA"],
+["LA AGUADA","LA CUARTEL 1","CHERRYPLUM I"],
+["LA AGUADA","LA CUARTEL 1","SANTINA"],
+["LINEA DEL TREN","LT CUARTEL 1","9M147"],
+["LINEA DEL TREN","LT CUARTEL 1","FLAVOR BLAST"],
+["LINEA DEL TREN","LT CUARTEL 2","9M147"],
+["LINEA DEL TREN","LT CUARTEL 2","FLAVOR BLAST"],
+["LINEA DEL TREN","LT CUARTEL 3","CHERRYPLUM I"],
+["LINEA DEL TREN","LT CUARTEL 3","CHERRYPLUM II"],
+["LINEA DEL TREN","LT CUARTEL 3","FLAVOR BLAST"],
+["LINEA DEL TREN","LT CUARTEL 4","CHERRYPLUM I"],
+["LINEA DEL TREN","LT CUARTEL 4","CHERRYPLUM II"],
+["LINEA DEL TREN","LT CUARTEL 4","FLAVOR BLAST"],
+["PRIMAVERA","PR CUARTEL 1.1","SANTINA"],
+["PRIMAVERA","PR CUARTEL 1.2","SANTINA"],
+["PRIMAVERA","PR CUARTEL 2.1","SANTINA"],
+["PRIMAVERA","PR CUARTEL 2.2","SANTINA"],
+["PRIMAVERA","PR CUARTEL 3","SANTINA"],
+["PRIMAVERA","PR CUARTEL 4","SANTINA"],
+["PROYECTOS NUEVOS","PN CUARTEL1","CHERRYPLUM I"],
+["PROYECTOS NUEVOS","PN CUARTEL1","SANTINA"],
+["RODRIGO ALAMOS","RA CUARTEL1","CHERRYPLUM I"],
+["RODRIGO ALAMOS","RA CUARTEL1","SANTINA"],
+["VENECIA","VN CUARTEL 1.1","VARIAS"],
+["VENECIA","VN CUARTEL 1.2","VARIAS"],
+["VENECIA","VN CUARTEL 1.3","SANTINA"],
+["VENECIA","VN CUARTEL 1.4","VARIAS TALSA"],
+["VENECIA","VN CUARTEL 2","SANTINA"],
+["VENECIA","VN CUARTEL 3","SANTINA"],
+["VIÑA ERRAZURIZ","VE CUARTEL 1","EARLY BING"],
+["VIÑA ERRAZURIZ","VE CUARTEL 1","EARLY BING *"],
+["VIÑA ERRAZURIZ","VE CUARTEL 1","LAPINS"],
+["VIÑA ERRAZURIZ","VE CUARTEL 2","EARLY BING"],
+["VIÑA ERRAZURIZ","VE CUARTEL 2","EARLY BING *"],
+["VIÑA ERRAZURIZ","VE CUARTEL 2","LAPINS"],
+["VIÑA ERRAZURIZ","VE CUARTEL 3","EARLY BING"],
+["VIÑA ERRAZURIZ","VE CUARTEL 3","EARLY BING *"],
+["VIÑA ERRAZURIZ","VE CUARTEL 3","LAPINS"],
+["VIÑA ERRAZURIZ","VE CUARTEL 4.1","EARLY BING"],
+["VIÑA ERRAZURIZ","VE CUARTEL 4.1","EARLY BING *"],
+["VIÑA ERRAZURIZ","VE CUARTEL 4.1","LAPINS"],
+["VIÑA ERRAZURIZ","VE CUARTEL 4.2","EARLY BING"],
+["VIÑA ERRAZURIZ","VE CUARTEL 5.1","SANTINA"],
+["VIÑA ERRAZURIZ","VE CUARTEL 5.2","SANTINA"]
+];
+/* por ahora solo trabajamos con estos 3 fundos (de la base real completa) */
+var FUNDOS_ACTIVOS = ["CABALLOS 1","CORPORA","ETCHEGARAY"];
+RAW_LOTES = RAW_LOTES.filter(function(r){ return FUNDOS_ACTIVOS.indexOf(r[0])>=0; });
+
+var EVALUADORES = ["MOISES GUZMAN PINGO","ANA TORRES LUNA","CARLOS RUIZ DIAZ","LUIS PEREZ GOMEZ","JOSE FLORES CANO"];
+var GEO_POR_FECHA = [2,3,4]; // cuantas evaluaciones de Hilera/Planta se generan por cada fecha (variable)
+var DATE_POOL = ["2026-07-01","2026-07-02","2026-07-03","2026-07-04","2026-07-05"];
+
+/* construir FUNDOS_DB agrupando fundo -> lote -> [variedades] a partir de la base real */
+var FUNDOS_DB = {};
+RAW_LOTES.forEach(function(r){
+  var fundo=r[0], lote=r[1], variedad=r[2];
+  if(!FUNDOS_DB[fundo]) FUNDOS_DB[fundo] = {lotes:{}};
+  if(!FUNDOS_DB[fundo].lotes[lote]) FUNDOS_DB[fundo].lotes[lote] = {variedades:[]};
+  if(FUNDOS_DB[fundo].lotes[lote].variedades.indexOf(variedad)<0) FUNDOS_DB[fundo].lotes[lote].variedades.push(variedad);
+});
+/* asignar coordenadas (grilla) y fechas a cada lote, de forma determinista */
+Object.keys(FUNDOS_DB).forEach(function(fundo, fi){
+  var cols = 5;
+  var baseLat = -13.85 - Math.floor(fi/cols)*0.11;
+  var baseLng = -75.85 + (fi%cols)*0.11;
+  var loteKeys = Object.keys(FUNDOS_DB[fundo].lotes);
+  loteKeys.forEach(function(lote, li){
+    var lcols = 4;
+    var cfg = FUNDOS_DB[fundo].lotes[lote];
+    cfg.lat = baseLat + Math.floor(li/lcols)*0.013;
+    cfg.lng = baseLng + (li%lcols)*0.013;
+    var numFechas = (li%2===0) ? 2 : 1;
+    cfg.fechas = [];
+    for(var k=0;k<numFechas;k++){ cfg.fechas.push(DATE_POOL[(li+k)%DATE_POOL.length]); }
+  });
+});
+
+function generarEvaluaciones(){
+  var out = []; var idc = 1;
+  Object.keys(FUNDOS_DB).forEach(function(fundo){
+    var fd = FUNDOS_DB[fundo];
+    Object.keys(fd.lotes).forEach(function(lote){
+      var cfg = fd.lotes[lote];
+      cfg.fechas.forEach(function(fecha, fi){
+        var fechaTxt = fecha.split("-").reverse().join("/");
+        var nGeo = GEO_POR_FECHA[(idc+fi) % GEO_POR_FECHA.length];
+        var evaluador = EVALUADORES[idc % EVALUADORES.length];
+        var variedad = cfg.variedades[fi % cfg.variedades.length];
+        for(var i=0;i<nGeo;i++){
+          var lat = cfg.lat + (Math.random()-0.5)*0.004;
+          var lng = cfg.lng + (Math.random()-0.5)*0.004;
+          out.push({id:idc,fundo:fundo,lote:lote,variedad:variedad,fecha:fecha,fechaTxt:fechaTxt,evaluador:evaluador,lat:lat,lng:lng,
+            eventos:[{tipo:"GEOLOCALIZACION",hora:"0"+(8+idc%3)+":"+String(10+idc%50).padStart(2,'0')+":00",tiempo:(0.05+(idc%5)*0.01).toFixed(2),
+              datos:{HILERA:String(1+idc%30),PLANTA:String(1+idc%12)}}]});
+          idc++;
+        }
+        var lat2 = cfg.lat + (Math.random()-0.5)*0.004;
+        var lng2 = cfg.lng + (Math.random()-0.5)*0.004;
+        out.push({id:idc,fundo:fundo,lote:lote,variedad:variedad,fecha:fecha,fechaTxt:fechaTxt,evaluador:evaluador,lat:lat2,lng:lng2,
+          eventos:[{tipo:"DIGITACION",hora:(9+idc%3)+":"+String(10+idc%40).padStart(2,'0')+":00",tiempo:(0.10+(idc%5)*0.01).toFixed(2),
+            datos:{LOTE:lote,FECHA_COSECHA:fechaTxt,TEMPORABILIDAD:["TEMPRANA","MEDIA","TARDIA"][idc%3],HA:(20+idc%40).toFixed(1),TN_HA:String(30+idc%20),D1:"20",D2:"20",D3:"20",D4:"40",XL:"15",J:"15",J2:"15",J3:"15",J4:"15",J5:"25"}}]});
+        idc++;
+      });
+    });
+  });
+  return out;
+}
+var EVALS = generarEvaluaciones();
+var st = {fundo:"Todos",lote:"Todos",variedad:"Todos",results:[],detailPin:null,approved:{}};
+var map, clusterLayer, pinsLayer;
+
+function initMap(){
+  map = L.map('mapReal',{zoomControl:true}).setView([-19,-70],5);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    maxZoom:19, attribution:'Tiles &copy; Esri'
+  }).addTo(map);
+  clusterLayer = L.layerGroup().addTo(map);
+  pinsLayer = L.layerGroup();
+}
+function centroid(list){
+  if(list.length===0) return [-19,-70];
+  var la=0,lo=0;
+  list.forEach(function(e){la+=e.lat;lo+=e.lng;});
+  return [la/list.length, lo/list.length];
+}
+function lotesFor(fundo, variedad){
+  var fundos = fundo==="Todos" ? Object.keys(FUNDOS_DB) : [fundo];
+  var a = [];
+  fundos.forEach(function(f){
+    Object.keys(FUNDOS_DB[f].lotes).forEach(function(l){
+      var vs = FUNDOS_DB[f].lotes[l].variedades;
+      if(!variedad || variedad==="Todos" || vs.indexOf(variedad)>=0){ if(a.indexOf(l)<0) a.push(l); }
+    });
+  });
+  return a;
+}
+function variedadesFor(fundo, lote){
+  var a = [];
+  var fundos = fundo==="Todos" ? Object.keys(FUNDOS_DB) : [fundo];
+  fundos.forEach(function(f){
+    var loteKeys = (lote && lote!=="Todos" && FUNDOS_DB[f].lotes[lote]) ? [lote] : Object.keys(FUNDOS_DB[f].lotes);
+    loteKeys.forEach(function(l){ FUNDOS_DB[f].lotes[l].variedades.forEach(function(v){ if(a.indexOf(v)<0) a.push(v); }); });
+  });
+  return a;
+}
+function matchScope(e){
+  if(st.fundo!=="Todos" && e.fundo!==st.fundo) return false;
+  if(st.lote!=="Todos" && e.lote!==st.lote) return false;
+  if(st.variedad!=="Todos" && e.variedad!==st.variedad) return false;
+  var fi = document.getElementById('fIni').value;
+  var ff = document.getElementById('fFin').value;
+  if(fi && e.fecha < fi) return false;
+  if(ff && e.fecha > ff) return false;
+  return true;
+}
+function setFundo(v){ st.fundo=v; st.variedad="Todos"; st.lote="Todos"; renderCascadeFilters(); }
+function setLote(v){ st.lote=v; renderCascadeFilters(); }
+function setVariedad(v){ st.variedad=v; st.lote="Todos"; renderCascadeFilters(); }
+
+function buscar(){
+  st.results = EVALS.filter(matchScope);
+  st.detailPin = null;
+  renderDetail();
+  renderCascadeFilters();
+  showClusterResult();
+}
+function verDetalle(id){ st.detailPin=id; map.closePopup(); renderDetail(); document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'start'}); }
+function cerrarDetalle(){ st.detailPin=null; renderDetail(); }
+function aprobarResumen(id){ st.approved[id]=true; renderDetail(); }
+
+function clusterIcon(n){ return L.divIcon({html:"<div class='cluster-badge'>"+n+"</div>",className:'',iconSize:[44,44],iconAnchor:[22,22]}); }
+function markerIconFor(e){
+  var tipo = e.eventos[0].tipo;
+  var fill = tipo === "DIGITACION" ? "#e67e22" : "#2f8fd6";
+  var svg = "<svg class='pin-icon' viewBox='0 0 24 24' fill='"+fill+"'><path d='M12 0C7.6 0 4 3.6 4 8c0 5.4 8 16 8 16s8-10.6 8-16c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z'/></svg>";
+  return L.divIcon({html:svg,className:'',iconSize:[30,30],iconAnchor:[15,30]});
+}
+function popupHtml(e){
+  var evNames = e.eventos.map(function(ev){return ev.tipo;}).join(", ");
+  var first = e.eventos[0];
+  var html = "";
+  html += "<div class='popup-label'>Eventos encontrados</div><div class='popup-val'>- "+evNames+"</div>";
+  html += "<div class='popup-label'>Evaluador</div><div class='popup-val'>- "+e.evaluador+"</div>";
+  html += "<div class='popup-label'>Fecha de registro</div><div class='popup-val'>- "+e.fechaTxt+" "+first.hora+"</div>";
+  html += "<div class='popup-label'>Tiempo</div><div class='popup-val'>- "+first.tiempo+" min</div>";
+  html += "<div class='popup-emu'>Emulado</div>";
+  html += "<a class='popup-verdet' href='#' onclick='verDetalle("+e.id+");return false'>Ver Detalle</a>";
+  return html;
+}
+function showClusterResult(){
+  clusterLayer.clearLayers(); pinsLayer.clearLayers();
+  if(map.hasLayer(pinsLayer)) map.removeLayer(pinsLayer);
+  if(!map.hasLayer(clusterLayer)) clusterLayer.addTo(map);
+  document.getElementById('backBtn').style.display='none';
+  var n = st.results.length;
+  document.getElementById('countInfo').innerText = n + " evaluación(es) encontradas";
+  if(n===0){ return; }
+  var c = centroid(st.results);
+  var marker = L.marker(c,{icon:clusterIcon(n)});
+  marker.on('click', openCluster);
+  marker.addTo(clusterLayer);
+  /* el punto se ubica en el mismo mapa (sin cambiar el zoom); solo se centra suavemente */
+  map.panTo(c,{animate:true,duration:0.5});
+}
+function openCluster(){
+  map.removeLayer(clusterLayer);
+  pinsLayer.clearLayers(); pinsLayer.addTo(map);
+  var bounds = [];
+  st.results.forEach(function(e){
+    var m = L.marker([e.lat,e.lng],{icon:markerIconFor(e)});
+    m.bindPopup(popupHtml(e),{closeButton:true,maxWidth:230});
+    m.addTo(pinsLayer);
+    bounds.push([e.lat,e.lng]);
+  });
+  document.getElementById('backBtn').style.display='flex';
+  if(bounds.length===1){ map.flyTo(bounds[0],17,{duration:0.6}); }
+  else { map.flyToBounds(bounds,{padding:[60,60],duration:0.6,maxZoom:17}); }
+}
+function backToMap(){
+  if(map.hasLayer(pinsLayer)) map.removeLayer(pinsLayer);
+  if(!map.hasLayer(clusterLayer)) clusterLayer.addTo(map);
+  document.getElementById('backBtn').style.display='none';
+  var n = st.results.length;
+  if(n>0){
+    var c = centroid(st.results);
+    var marker = L.marker(c,{icon:clusterIcon(n)});
+    marker.on('click', openCluster);
+    marker.addTo(clusterLayer);
+    map.flyTo(c,8,{duration:0.6});
+  }
+}
+
+function renderCascadeFilters(){
+  var h = "";
+  h += "<div class='field'><label><span class='req'>*</span>Seleccione un fundo</label><select onchange='setFundo(this.value)'>";
+  h += "<option value='Todos'"+(st.fundo==="Todos"?" selected":"")+">--Todos--</option>";
+  Object.keys(FUNDOS_DB).forEach(function(f){ h += "<option value='"+f+"'"+(st.fundo===f?" selected":"")+">"+f+"</option>"; });
+  h += "</select></div>";
+  var variedades = variedadesFor(st.fundo, "Todos");
+  h += "<div class='field'><label>Variedad</label><select onchange='setVariedad(this.value)'>";
+  h += "<option value='Todos'"+(st.variedad==="Todos"?" selected":"")+">--Todos--</option>";
+  variedades.forEach(function(v){ h += "<option value='"+v+"'"+(st.variedad===v?" selected":"")+">"+v+"</option>"; });
+  h += "</select></div>";
+  var lotes = lotesFor(st.fundo, st.variedad);
+  h += "<div class='field'><label><span class='req'>*</span>Seleccione un lote</label><select onchange='setLote(this.value)'>";
+  h += "<option value='Todos'"+(st.lote==="Todos"?" selected":"")+">--Todos--</option>";
+  lotes.forEach(function(l){ h += "<option value='"+l+"'"+(st.lote===l?" selected":"")+">"+l+"</option>"; });
+  h += "</select></div>";
+  document.getElementById("cascadeFilters").innerHTML = h;
+}
+function renderDetail(){
+  var panel = document.getElementById("detailPanel");
+  if(!st.detailPin){ panel.innerHTML = ""; return; }
+  var e = st.results.filter(function(x){return x.id===st.detailPin;})[0];
+  if(!e){ panel.innerHTML=""; return; }
+  var first = e.eventos[0];
+  var html = "<div class='detail-panel'>";
+  html += "<div class='detail-head'><div class='who'><b>Evaluador:</b> "+e.evaluador+"&nbsp;&nbsp;|&nbsp;&nbsp;<b>Fecha:</b> "+e.fechaTxt+" "+first.hora+"</div><button class='close-full' onclick='cerrarDetalle()'>&larr; Regresar</button></div>";
+  html += "<div class='accordion collapsed'><div class='hd'>&#8250; Datos Generales</div></div>";
+  e.eventos.forEach(function(ev){
+    html += "<div class='accordion'><div class='hd'>&#8964; Evento: "+ev.tipo+"</div><div class='body'>";
+    if(ev.tipo==="GEOLOCALIZACION"){
+      html += "<div class='f'><label>Hilera</label><input readonly value='"+ev.datos.HILERA+"'></div>";
+      html += "<div class='f'><label>Planta</label><input readonly value='"+ev.datos.PLANTA+"'></div>";
+    } else {
+      var d = ev.datos;
+      html += "<div class='f'><label>Lote</label><input readonly value='"+d.LOTE+"'></div>";
+      html += "<div class='f'><label>Fecha de cosecha</label><input readonly value='"+d.FECHA_COSECHA+"'></div>";
+      html += "<div class='f'><label>Temporabilidad</label><input readonly value='"+d.TEMPORABILIDAD+"'></div>";
+      html += "<div class='f'><label>Ha.</label><input readonly value='"+d.HA+"'></div>";
+      html += "<div class='f'><label>Tn/Ha.</label><input readonly value='"+d.TN_HA+"'></div>";
+      html += "<div class='f'><label>1&deg; distribución cosecha %</label><input readonly value='"+d.D1+"'></div>";
+      html += "<div class='f'><label>2&deg; distribución cosecha %</label><input readonly value='"+d.D2+"'></div>";
+      html += "<div class='f'><label>3&deg; distribución cosecha %</label><input readonly value='"+d.D3+"'></div>";
+      html += "<div class='f'><label>4&deg; distribución cosecha %</label><input readonly value='"+d.D4+"'></div>";
+      html += "<div class='f check'><input type='checkbox' checked disabled><label style='margin:0'>Calibre</label></div>";
+      html += "<div class='f'><label>XL %</label><input readonly value='"+d.XL+"'></div>";
+      html += "<div class='f'><label>J %</label><input readonly value='"+d.J+"'></div>";
+      html += "<div class='f'><label>2J %</label><input readonly value='"+d.J2+"'></div>";
+      html += "<div class='f'><label>3J %</label><input readonly value='"+d.J3+"'></div>";
+      html += "<div class='f'><label>4J %</label><input readonly value='"+d.J4+"'></div>";
+      html += "<div class='f'><label>5J %</label><input readonly value='"+d.J5+"'></div>";
+      var approved = !!st.approved[e.id];
+      html += "<div style='grid-column:1/-1;margin-top:4px'><button onclick='aprobarResumen("+e.id+")' style='padding:8px 22px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid "+(approved?"#3a9d5d":"#cfd6db")+";background:"+(approved?"#3a9d5d":"#fff")+";color:"+(approved?"#fff":"#374151")+"'>"+(approved?"&#10003; Aprobado":"Aprobado")+"</button></div>";
+    }
+    html += "</div></div>";
+  });
+  html += "</div>";
+  panel.innerHTML = html;
+}
+/* =========================================================
+   MODULO DE REPORTES: importar excel + reporte semanal
+   ========================================================= */
+var REPORT_DATA = [];
+var DAY_COLS = [];
+try{
+  var savedReport = localStorage.getItem('agritracer_report_data');
+  if(savedReport){
+    var parsedReport = JSON.parse(savedReport);
+    REPORT_DATA = parsedReport.rows || [];
+    DAY_COLS = parsedReport.days || [];
+  }
+}catch(errLoad){ REPORT_DATA = []; DAY_COLS = []; }
+
+function importarExcel(){
+  var input = document.getElementById('fileInput');
+  var statusEl = document.getElementById('importStatus');
+  var f = input.files[0];
+  if(!f){ statusEl.innerHTML = "<span style='color:#c0392b'>Selecciona un archivo primero.</span>"; return; }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data = new Uint8Array(e.target.result);
+      var wb = XLSX.read(data,{type:'array'});
+      var sheet = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(sheet,{header:1,defval:""});
+      parseSheetRows(rows);
+      guardarReportData();
+      statusEl.innerHTML = "<span style='color:#3a9d5d;font-weight:600'>&#10003; "+REPORT_DATA.length+" fila(s) importadas correctamente. Ya puedes revisar el Reporte Semanal.</span>";
+    }catch(errParse){
+      statusEl.innerHTML = "<span style='color:#c0392b'>No se pudo leer el archivo: "+errParse.message+"</span>";
+    }
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function parseSheetRows(rows){
+  var headerIdx = -1, headerRow = null;
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    for(var j=0;j<r.length;j++){
+      if(String(r[j]).trim().toLowerCase()==="campo"){ headerIdx=i; headerRow=r; break; }
+    }
+    if(headerIdx>=0) break;
+  }
+  if(headerIdx<0){ throw new Error("No se encontró la fila con encabezados (Campo, Especie, Cuartel, Variedad...)."); }
+  var colIndex = {};
+  headerRow.forEach(function(h,idx){ colIndex[String(h).trim().toLowerCase()] = idx; });
+  var campoIdx = colIndex['campo'], especieIdx = colIndex['especie'], estadoIdx = colIndex['estado'], cuartelIdx = colIndex['cuartel'], variedadIdx = colIndex['variedad'];
+  if(campoIdx===undefined || variedadIdx===undefined){ throw new Error("Faltan columnas obligatorias (Campo / Variedad)."); }
+  var totalIdx = -1;
+  headerRow.forEach(function(h,idx){ if(String(h).toLowerCase().indexOf('total semana')>=0) totalIdx=idx; });
+  var days = [], dayIndices = [];
+  var startCol = variedadIdx+1;
+  var endCol = totalIdx>=0 ? totalIdx : headerRow.length;
+  for(var c=startCol;c<endCol;c++){
+    var label = String(headerRow[c]||"").trim();
+    if(label){ days.push(label); dayIndices.push(c); }
+  }
+  DAY_COLS = days;
+  var out = [];
+  for(var k=headerIdx+1;k<rows.length;k++){
+    var row = rows[k];
+    if(!row || row[campoIdx]===undefined || row[campoIdx]===""){ continue; }
+    var diasObj = {};
+    dayIndices.forEach(function(ci,idx2){ diasObj[days[idx2]] = parseFloat(row[ci])||0; });
+    var totalSemana = totalIdx>=0 ? (parseFloat(row[totalIdx])||0) : dayIndices.reduce(function(s,ci){ return s+(parseFloat(row[ci])||0); },0);
+    out.push({
+      id: k,
+      campo: String(row[campoIdx]||""),
+      especie: String(row[especieIdx]||""),
+      estado: String(row[estadoIdx]||""),
+      cuartel: String(row[cuartelIdx]||""),
+      variedad: String(row[variedadIdx]||""),
+      dias: diasObj,
+      totalSemana: totalSemana,
+      aprobado: false
+    });
+  }
+  REPORT_DATA = out;
+}
+function guardarReportData(){
+  try{ localStorage.setItem('agritracer_report_data', JSON.stringify({rows:REPORT_DATA, days:DAY_COLS})); }catch(errSave){}
+}
+function toggleAprobado(id){
+  var row = REPORT_DATA.filter(function(r){return r.id===id;})[0];
+  if(row){ row.aprobado = !row.aprobado; guardarReportData(); renderReportTable(); }
+}
+function aprobarTodo(){
+  REPORT_DATA.forEach(function(r){ r.aprobado = true; });
+  guardarReportData(); renderReportTable();
+}
+
+var rst = {campo:"Todos",especie:"Todos",cuartel:"Todos",variedad:"Todos",soloAprobados:false};
+function setRSoloAprobados(v){ rst.soloAprobados=v; renderReportTable(); }
+
+function reportMatch(r){
+  if(rst.campo!=="Todos" && r.campo!==rst.campo) return false;
+  if(rst.especie!=="Todos" && r.especie!==rst.especie) return false;
+  if(rst.cuartel!=="Todos" && r.cuartel!==rst.cuartel) return false;
+  if(rst.variedad!=="Todos" && r.variedad!==rst.variedad) return false;
+  if(rst.soloAprobados && !r.aprobado) return false;
+  return true;
+}
+function reportOptions(field){
+  var scope = REPORT_DATA.filter(function(r){ return rst.campo==="Todos" || r.campo===rst.campo; });
+  var a = [];
+  scope.forEach(function(r){ var v=r[field]; if(v && a.indexOf(v)<0) a.push(v); });
+  return a;
+}
+function setRCampo(v){ rst.campo=v; rst.especie="Todos"; rst.cuartel="Todos"; rst.variedad="Todos"; renderReportFilters(); renderReportTable(); }
+function setREspecie(v){ rst.especie=v; renderReportFilters(); renderReportTable(); }
+function setRCuartel(v){ rst.cuartel=v; renderReportFilters(); renderReportTable(); }
+function setRVariedad(v){ rst.variedad=v; renderReportFilters(); renderReportTable(); }
+
+function renderReportFilters(){
+  var campos = []; REPORT_DATA.forEach(function(r){ if(r.campo && campos.indexOf(r.campo)<0) campos.push(r.campo); });
+  var h = "";
+  function buildSelect(label, field, setter, options, current){
+    var s = "<div class='field'><label>"+label+"</label><select onchange='"+setter+"(this.value)'>";
+    s += "<option value='Todos'"+(current==="Todos"?" selected":"")+">--Todos--</option>";
+    options.forEach(function(o){ s += "<option value='"+o+"'"+(current===o?" selected":"")+">"+o+"</option>"; });
+    s += "</select></div>";
+    return s;
+  }
+  h += buildSelect("Campo","campo","setRCampo",campos,rst.campo);
+  h += buildSelect("Especie","especie","setREspecie",reportOptions('especie'),rst.especie);
+  h += buildSelect("Cuartel","cuartel","setRCuartel",reportOptions('cuartel'),rst.cuartel);
+  h += buildSelect("Variedad","variedad","setRVariedad",reportOptions('variedad'),rst.variedad);
+  document.getElementById("reportFilters").innerHTML = h;
+}
+
+function isoWeekNumber(d){
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date-yearStart)/86400000)+1)/7);
+}
+
+function fmtNum(n){ return n.toLocaleString('es-PE',{maximumFractionDigits:1}); }
+
+function renderReportTable(){
+  document.getElementById('semanaActualLabel').innerText = "Semana "+isoWeekNumber(new Date())+" del "+new Date().getFullYear();
+  var scopeFilters = REPORT_DATA.filter(function(r){
+    if(rst.campo!=="Todos" && r.campo!==rst.campo) return false;
+    if(rst.especie!=="Todos" && r.especie!==rst.especie) return false;
+    if(rst.cuartel!=="Todos" && r.cuartel!==rst.cuartel) return false;
+    if(rst.variedad!=="Todos" && r.variedad!==rst.variedad) return false;
+    return true;
+  });
+  var filtered = scopeFilters.filter(function(r){ return !rst.soloAprobados || r.aprobado; });
+  var totalSemana = filtered.reduce(function(s,r){ return s+r.totalSemana; },0);
+  var totalesDia = {};
+  DAY_COLS.forEach(function(d){ totalesDia[d]=0; });
+  filtered.forEach(function(r){ DAY_COLS.forEach(function(d){ totalesDia[d] += (r.dias[d]||0); }); });
+  var nAprobadas = scopeFilters.filter(function(r){return r.aprobado;}).length;
+  var nPendientes = scopeFilters.length - nAprobadas;
+
+  var resumen = "<div style='background:#e3f7f8;padding:10px 16px;border-radius:6px'><b>Total Kg semana:</b> "+fmtNum(totalSemana)+"</div>";
+  DAY_COLS.forEach(function(d){
+    resumen += "<div style='background:#f4f6f7;padding:10px 16px;border-radius:6px'><b>"+d+":</b> "+fmtNum(totalesDia[d])+"</div>";
+  });
+  resumen += "<div style='background:#eafaf0;padding:10px 16px;border-radius:6px;color:#1f6b3d'><b>Aprobadas:</b> "+nAprobadas+"</div>";
+  resumen += "<div style='background:#fff6e6;padding:10px 16px;border-radius:6px;color:#8a5d00'><b>Pendientes:</b> "+nPendientes+"</div>";
+  document.getElementById('resumenSemana').innerHTML = resumen;
+
+  var toolbar = document.getElementById('reportToolbar');
+  if(toolbar){
+    toolbar.innerHTML = "<label style='display:flex;align-items:center;gap:6px;font-size:13px;color:#374151'><input type='checkbox' onchange='setRSoloAprobados(this.checked)' "+(rst.soloAprobados?"checked":"")+"> Ver solo aprobados (lo que verá Power BI)</label>"+
+      "<button class='btn-buscar' onclick='aprobarTodo()' style='background:#3a9d5d'>&#10003; Aprobar todo lo filtrado</button>";
+  }
+
+  var table = document.getElementById('reportTable');
+  if(REPORT_DATA.length===0){
+    table.innerHTML = "<tr><td style='padding:16px;color:#6b7280'>Aún no has importado datos. Ve a <b>Reportes &rarr; Importar Datos</b> para subir tu Excel.</td></tr>";
+    return;
+  }
+  var thead = "<thead><tr style='background:#e3f7f8'>";
+  ["Campo","Especie","Estado","Cuartel","Variedad"].forEach(function(c){ thead += "<th style='padding:7px 10px;text-align:left;border-bottom:2px solid #cfe8ea'>"+c+"</th>"; });
+  DAY_COLS.forEach(function(d){ thead += "<th style='padding:7px 10px;text-align:right;border-bottom:2px solid #cfe8ea'>"+d+"</th>"; });
+  thead += "<th style='padding:7px 10px;text-align:right;border-bottom:2px solid #cfe8ea'>Total Semana</th>";
+  thead += "<th style='padding:7px 10px;text-align:center;border-bottom:2px solid #cfe8ea'>Aprobación</th></tr></thead>";
+  var tbody = "<tbody>";
+  filtered.forEach(function(r){
+    tbody += "<tr style='border-bottom:1px solid #eee'>";
+    tbody += "<td style='padding:6px 10px'>"+r.campo+"</td><td style='padding:6px 10px'>"+r.especie+"</td><td style='padding:6px 10px'>"+r.estado+"</td><td style='padding:6px 10px'>"+r.cuartel+"</td><td style='padding:6px 10px'>"+r.variedad+"</td>";
+    DAY_COLS.forEach(function(d){ var v=r.dias[d]||0; tbody += "<td style='padding:6px 10px;text-align:right'>"+(v?fmtNum(v):"")+"</td>"; });
+    tbody += "<td style='padding:6px 10px;text-align:right;font-weight:600'>"+fmtNum(r.totalSemana)+"</td>";
+    tbody += "<td style='padding:6px 10px;text-align:center'><button onclick='toggleAprobado("+r.id+")' style='padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid "+(r.aprobado?"#3a9d5d":"#cfd6db")+";background:"+(r.aprobado?"#3a9d5d":"#fff")+";color:"+(r.aprobado?"#fff":"#374151")+"'>"+(r.aprobado?"&#10003; Aprobado":"Pendiente")+"</button></td>";
+    tbody += "</tr>";
+  });
+  if(filtered.length===0){ tbody += "<tr><td colspan='"+(7+DAY_COLS.length)+"' style='padding:16px;color:#6b7280'>No hay filas que coincidan con el filtro seleccionado.</td></tr>"; }
+  tbody += "</tbody>";
+  table.innerHTML = thead+tbody;
+}
+</script>
+</body>
+</html>
